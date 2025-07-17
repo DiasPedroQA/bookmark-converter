@@ -1,0 +1,130 @@
+# ==============================
+# pyproject.toml — bookmark-converter
+# ==============================
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+# ------------------------------
+[tool.poetry]
+name = "bookmark-converter"
+version = "0.1.0"
+description = "Conversor de bookmarks HTML para outros formatos estruturados"
+authors = ["Pedro PM Dias <diaspedro.dev@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+  { include = "converter", from = "source" }
+]
+
+# ------------------------------
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic = "^2.0"
+beautifulsoup4 = "^4.13.0"
+fastapi = "^0.115.14"
+
+# ------------------------------
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^6.2.1"
+pytest-asyncio = "^1.0.0"
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.0.0"
+bandit = "^1.8.0"
+mypy = "^1.0.0"
+pylint = "^3.0.0"
+ipdb = "^0.13.0"
+types-beautifulsoup4 = "^4.12.0"
+types-requests = "^2.31.0"
+pre-commit = "^3.7.0"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.5.18"
+
+# ==============================
+# ▶️ Pytest
+# ==============================
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-v --cov=source/converter --cov-report=term-missing --cov-report=html"
+testpaths = ["tests"]
+pythonpath = ["source"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+# ==============================
+# 📊 Coverage
+# ==============================
+
+[tool.coverage.run]
+source = ["source/converter"]
+branch = true
+omit = [
+  "**/__init__.py",
+  "**/tests/*"
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == .__main__.:"
+]
+
+# ==============================
+# 🎨 Code style
+# ==============================
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+skip-string-normalization = false
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = ["converter"]
+known_third_party = ["pydantic", "fastapi", "bs4"]
+
+[tool.flake8]
+max-line-length = 120
+max-complexity = 10
+ignore = ["E203", "W503", "E501"]
+select = ["B", "C", "E", "F", "W", "T4", "B9"]
+exclude = [
+  ".venv*",
+  "__pycache__",
+  "build",
+  "dist",
+  "tests",
+  "scripts"
+]
+
+# ==============================
+# 🔎 Mypy
+# ==============================
+
+[tool.mypy]
+mypy_path = "source"
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = true
+warn_unreachable = true
+exclude = "^tests/"
+explicit_package_bases = true

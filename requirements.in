@@ -1,0 +1,14 @@
+# requirements.in
+
+fastapi
+httpx
+coverage
+beautifulsoup4
+pydantic
+uvicorn
+psutil
+
+# Ferramentas de documentação
+mkdocs
+mkdocs-material
+mkdocstrings[python]

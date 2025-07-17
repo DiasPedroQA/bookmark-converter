@@ -1,0 +1,24 @@
+# requirements-dev.in
+
+# Desenvolvimento e testes
+pytest
+pytest-cov
+requests
+ipdb
+
+# Linters e formatadores
+ruff
+isort
+black
+flake8
+pylint
+bandit
+
+# Hooks
+pre-commit
+
+# Dependências principais também devem ser incluídas
+-c requirements.txt
+
+# No final do arquivo
+pip-tools

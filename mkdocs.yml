@@ -1,0 +1,27 @@
+### 📚 `mkdocs.yml` base moderna
+
+site_name: Bookmark Converter
+repo_url: https://github.com/seuusuario/bookmark-converter
+repo_name: GitHub
+theme:
+  name: material
+  features:
+    - navigation.expand
+    - navigation.indexes
+    - toc.integrate
+    - content.code.copy
+    - search.highlight
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+
+nav:
+  - Início: index.md
+  - Instalação: instalacao.md
+  - Uso: uso.md
+  - API: api.md
+  - Referência Técnica: referencia.md

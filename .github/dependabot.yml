@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"  # Diretório onde está seu requirements.txt ou pyproject.toml
+    schedule:
+      interval: "weekly"   # Verifica atualizações semanalmente
+    open-pull-requests-limit: 5
+    # Optionally, you can add:
+    # allow:
+    #   - dependency-type: "all"
+    # ignore:
+    #   - dependency-name: "some-package"
+    #     versions:
+    #       - "1.x.x"

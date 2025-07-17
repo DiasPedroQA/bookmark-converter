@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Projeto Sistema",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/system-info": {
+      "get": {
+        "summary": "System Info",
+        "operationId": "system_info_v1_system_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response System Info V1 System Info Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

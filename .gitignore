@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -14,10 +15,46 @@ dist/
 downloads/
 eggs/
 .eggs/
+=======
+# ========================================
+# 🐍 Python: Bytecode, cache e binários
+# ========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+
+# ========================================
+# ⚙️ Ambientes virtuais
+# ========================================
+.venv/
+.venv*/
+env/
+ENV/
+env.bak/
+venv.bak/
+.pdm-python/
+.pixi/
+
+# ========================================
+# 📦 Build, distribuição e pacotes
+# ========================================
+build/
+dist/
+.eggs/
+*.egg-info/
+*.egg
+MANIFEST
+develop-eggs/
+downloads/
+>>>>>>> 9028aa7 (feat: add shared-setup workflow template for common CI steps)
 lib/
 lib64/
 parts/
 sdist/
+<<<<<<< HEAD
 var/
 wheels/
 share/python-wheels/
@@ -205,3 +242,96 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+=======
+wheels/
+share/python-wheels/
+.installed.cfg
+.Python
+
+# ========================================
+# 🧪 Testes, cobertura e linters
+# ========================================
+.cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.dmypy.json
+.mypy_cache/
+.pytype/
+.pyre/
+.ruff_cache/
+*.cover
+*.py.cover
+
+# ========================================
+# 📄 Logs, temporários e arquivos locais
+# ========================================
+*.log
+*.tmp
+*.bak
+.logs_makefile/
+*.sqlite3
+*.sqlite3-journal
+local_settings.py
+celerybeat-schedule
+celerybeat.pid
+
+# ========================================
+# 📚 Notebooks e dados interativos
+# ========================================
+*.ipynb
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# ========================================
+# 🧠 IDEs e editores
+# ========================================
+.vscode/
+.idea/
+.spyderproject
+.spyproject
+.ropeproject
+
+# ========================================
+# 📜 Documentação e ferramentas
+# ========================================
+docs/_build/
+.pybuilder/
+target/
+.site/
+marimo/_static/
+marimo/_lsp/
+__marimo__/
+.cursorignore
+.cursorindexingignore
+
+# ========================================
+# 📝 Configurações opcionais (não usadas)
+# ========================================
+.pypirc
+Pipfile.lock
+poetry.lock
+poetry.toml
+pdm.lock
+pdm.toml
+pixi.lock
+uv.lock
+
+# ========================================
+# 🗃️ Scripts auxiliares
+# ========================================
+refatorar_estrutura.sh
+
+# ========================================
+# ❌ Pastas ou arquivos experimentais
+# ========================================
+.logs/
+app-tkinter-venv/
+scripts/
+>>>>>>> 9028aa7 (feat: add shared-setup workflow template for common CI steps)
