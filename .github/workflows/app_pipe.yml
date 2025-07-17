@@ -69,7 +69,6 @@ jobs:
       - name: Enviar Cobertura para Codecov
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
           fail_ci_if_error: true
 
@@ -133,7 +132,7 @@ jobs:
     steps:
       - name: Criar Issue no GitHub em caso de falha
         env:
-          GH_TOKEN_ISSUES: ${{ secrets.GH_TOKEN_ISSUES }}
+          GH_TOKEN_ISSUES: ${{ secrets.GITHUB_TOKEN }}
           REPO: DiasPedroQA/HTMLReader
           WORKFLOW: ${{ github.workflow }}
           RUN_ID: ${{ github.run_id }}

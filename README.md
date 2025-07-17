@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# bookmark-converter
-O Bookmark Converter é uma ferramenta de linha de comando e biblioteca modular em Python para converter arquivos de favoritos (bookmarks) entre diferentes navegadores de desktop. Compatível com formatos como HTML (padrão do Chrome/Firefox), JSON (Brave, Vivaldi) e outros. Ideal para backup, migração entre navegadores e análise de favoritos.
-=======
 # 📚 Bookmark Converter
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -151,4 +147,3 @@ Distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais
 - Suporte total a testes, lint, formatação e documentação
 
 ---
->>>>>>> 9028aa7 (feat: add shared-setup workflow template for common CI steps)
