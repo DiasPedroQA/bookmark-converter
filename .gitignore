@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -15,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-=======
 # ========================================
 # 🐍 Python: Bytecode, cache e binários
 # ========================================
@@ -49,12 +47,10 @@ dist/
 MANIFEST
 develop-eggs/
 downloads/
->>>>>>> 9028aa7 (feat: add shared-setup workflow template for common CI steps)
 lib/
 lib64/
 parts/
 sdist/
-<<<<<<< HEAD
 var/
 wheels/
 share/python-wheels/
@@ -242,7 +238,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-=======
 wheels/
 share/python-wheels/
 .installed.cfg
@@ -288,6 +283,8 @@ celerybeat.pid
 .ipynb_checkpoints/
 profile_default/
 ipython_config.py
+*.drawio
+*.png
 
 # ========================================
 # 🧠 IDEs e editores
@@ -333,5 +330,5 @@ refatorar_estrutura.sh
 # ========================================
 .logs/
 app-tkinter-venv/
-scripts/
->>>>>>> 9028aa7 (feat: add shared-setup workflow template for common CI steps)
+# scripts/
+postman/*

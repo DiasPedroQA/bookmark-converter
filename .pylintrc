@@ -1,0 +1,5 @@
+[MASTER]
+extension-pkg-whitelist=pydantic
+
+[TYPECHECK]
+ignored-classes=FieldInfo

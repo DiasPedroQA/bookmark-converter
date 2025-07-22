@@ -1,0 +1,15 @@
+[run]
+source = src
+omit = */tests/*
+
+[report]
+skip_empty = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+
+[html]
+directory = htmlcov
+title = Relatório de Cobertura

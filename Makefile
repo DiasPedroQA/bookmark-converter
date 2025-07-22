@@ -1,7 +1,7 @@
 # =====================================================
 #                      VARIÁVEIS
 # =====================================================
-PROJECT_NAME := reborn
+PROJECT_NAME := REBORN
 VENV_PATH := .venv
 PYTHON := $(VENV_PATH)/bin/python
 PIP := $(VENV_PATH)/bin/pip
