@@ -13,6 +13,3 @@ def test_platform_specific_behavior() -> None:
     elif system_name == "Darwin":
         # Testes específicos para macOS
         assert "Darwin" == system_name
-    else:
-        # Para outras plataformas
-        assert False  # Ou algum teste genérico

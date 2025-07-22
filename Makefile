@@ -47,7 +47,7 @@ venv:
 	@echo "🛠️ Criando ambiente virtual em '$(VENV_PATH)'..."
 	@python3 -m venv $(VENV_PATH)
 	@echo "✅ Ambiente criado. Ative com:"
-	@echo "   source $(VENV_PATH)/bin/activate"
+	@echo "   src $(VENV_PATH)/bin/activate"
 
 .PHONY: install
 install:

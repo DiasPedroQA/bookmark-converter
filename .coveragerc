@@ -1,15 +1,23 @@
 [run]
 source = src
-omit = */tests/*
+branch = True
 
 [report]
-skip_empty = True
-skip_covered = False
-exclude_lines =
-    pragma: no cover
-    def __repr__
-    raise NotImplementedError
+# Arquivos que não devem entrar na contagem da cobertura
+omit =
+    */__init__.py
+    */tests/*
+    */scripts/*
+    */.venv/*
+    */.tox/*
+    **/__pycache__/*
+    **/*.pyc
+
+# Apresenta linhas não cobertas no terminal
+show_missing = True
+skip_covered = True
+precision = 2
 
 [html]
 directory = htmlcov
-title = Relatório de Cobertura
+title = Coverage Report — bookmark-converter

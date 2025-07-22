@@ -15,7 +15,7 @@ authors = ["Pedro PM Dias <diaspedro.dev@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [
-  { include = "converter", from = "source" }
+  { include = "converter", from = "src" }
 ]
 
 # ------------------------------
@@ -48,10 +48,10 @@ mkdocs-material = "^9.5.18"
 # ==============================
 
 [tool.pytest.ini_options]
+addopts = "--cov=src --cov-report=html --cov-report=term-missing"
 minversion = "8.0"
-addopts = "-v --cov=source/converter --cov-report=term-missing --cov-report=html"
 testpaths = ["tests"]
-pythonpath = ["source"]
+pythonpath = ["src"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
@@ -62,7 +62,7 @@ filterwarnings = ["ignore::DeprecationWarning"]
 # ==============================
 
 [tool.coverage.run]
-source = ["source/converter"]
+src = ["src/converter"]
 branch = true
 omit = [
   "**/__init__.py",
@@ -111,7 +111,7 @@ exclude = [
 # ==============================
 
 [tool.mypy]
-mypy_path = "source"
+mypy_path = "src"
 python_version = "3.10"
 strict = true
 ignore_missing_imports = true

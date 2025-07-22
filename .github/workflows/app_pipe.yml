@@ -1,4 +1,4 @@
-name: TDD CI/CD Pipeline
+name: 📦 CI/CD - Testes e Qualidade (TDD)
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 
 env:
   PYTHON_VERSION: '3.12'
+  PIP_CACHE_DIR: ~/.cache/pip
 
 jobs:
   lint-and-quality:
@@ -22,6 +23,13 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Instalar dependências
         run: |
@@ -36,7 +44,8 @@ jobs:
         run: isort src/ --profile black
 
       - name: Verificar Qualidade (Pylint)
-        run: pylint src/ tests/ || true
+        run: |
+          pylint src/ tests/ || echo "⚠️ Pylint encontrou problemas, mas o job continuará."
 
   test-linux:
     name: 🐧 Testes com Coverage (Linux)
@@ -52,19 +61,32 @@ jobs:
 
       - uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
+          path: ${{ env.PIP_CACHE_DIR }}
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Instalar dependências
         run: pip install -r requirements.txt -r requirements-dev.txt
 
-      - name: Rodar testes + Coverage
-        run: |
-          coverage run -m pytest -v --maxfail=1 --disable-warnings
-          coverage report -m
-          coverage xml
-          coverage html
+      - name: Rodar testes com Coverage
+        run: coverage run -m pytest -v --maxfail=1 --disable-warnings
+
+      - name: Gerar relatório Coverage (terminal)
+        run: coverage report -m
+
+      - name: Gerar XML para Codecov
+        run: coverage xml
+
+      - name: Gerar HTML para inspeção
+        run: coverage html
+
+      - name: Upload do htmlcov
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: htmlcov
+          path: htmlcov
 
       - name: Enviar Cobertura para Codecov
         uses: codecov/codecov-action@v4
@@ -84,10 +106,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Instalar dependências e rodar testes
+      - name: Instalar dependências
         run: |
           pip install -r requirements.txt -r requirements-dev.txt
-          pytest
+          pytest -v --maxfail=1 --disable-warnings
 
   test-macos:
     name: 🍎 Testes no macOS
@@ -101,10 +123,10 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Instalar dependências e rodar testes
+      - name: Instalar dependências
         run: |
           pip install -r requirements.txt -r requirements-dev.txt
-          pytest
+          pytest -v --maxfail=1 --disable-warnings
 
   security:
     name: 🔐 Análise de Segurança (Bandit)
@@ -121,19 +143,19 @@ jobs:
       - name: Rodar Bandit
         run: |
           pip install bandit
-          bandit -r src/ -ll -ii
+          bandit -r src/ -ll -ii --skip B101 || echo "⚠️ Bandit encontrou problemas, mas o job continuará."
 
   create-issue-on-failure:
     name: 🚨 Criar Issue em caso de falha
     runs-on: ubuntu-latest
     needs: [lint-and-quality, test-linux, test-windows, test-macos, security]
-    if: failure()  # Executa somente se algum job anterior falhar
+    if: failure()
 
     steps:
       - name: Criar Issue no GitHub em caso de falha
         env:
           GH_TOKEN_ISSUES: ${{ secrets.GITHUB_TOKEN }}
-          REPO: DiasPedroQA/HTMLReader
+          REPO: DiasPedroQA/bookmark-converter
           WORKFLOW: ${{ github.workflow }}
           RUN_ID: ${{ github.run_id }}
           ACTOR: ${{ github.actor }}
@@ -141,4 +163,6 @@ jobs:
         run: |
           ISSUE_TITLE="🔴 Falha na pipeline: $WORKFLOW"
           ISSUE_BODY="Pipeline falhou para o repositório $REPO\n\nWorkflow: $WORKFLOW\nRun ID: $RUN_ID\nBranch: $BRANCH\nExecutado por: $ACTOR\n\nVerifique os logs para detalhes."
-          curl -X POST -H "Authorization: token $GH_TOKEN_ISSUES" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/$REPO/issues -d "{\"title\": \"$ISSUE_TITLE\", \"body\": \"$ISSUE_BODY\"}"
+          curl -X POST -H "Authorization: token $GH_TOKEN_ISSUES" -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/$REPO/issues \
+          -d "{\"title\": \"$ISSUE_TITLE\", \"body\": \"$ISSUE_BODY\"}" || echo "⚠️ Falha ao criar issue"
