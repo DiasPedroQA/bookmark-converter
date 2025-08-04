@@ -1,0 +1,43 @@
+{
+    "nome_do_sistema": "Linux",
+    "versao": "#24~24.04.3-Ubuntu SMP PREEMPT_DYNAMIC Mon Jul  7 16:39:17 UTC 2",
+    "arquitetura": "64bit",
+    "usuario_logado": "pedro-pm-dias",
+    "caminho_pasta_usuario": "/home/pedro-pm-dias",
+    "filhos_pasta_home": [
+        "/home/pedro-pm-dias/Público",
+        "/home/pedro-pm-dias/fYYcGmC2.html.part",
+        "/home/pedro-pm-dias/Downloads",
+        "/home/pedro-pm-dias/Salles_Pedro_Dias_Resume.pdf",
+        "/home/pedro-pm-dias/Modelos",
+        "/home/pedro-pm-dias/base-cv.odt",
+        "/home/pedro-pm-dias/hs_err_pid31608.log",
+        "/home/pedro-pm-dias/_L_59p8z.html.part",
+        "/home/pedro-pm-dias/Área de trabalho",
+        "/home/pedro-pm-dias/google-chrome-stable_current_amd64.deb",
+        "/home/pedro-pm-dias/m0TsRPdo.html.part",
+        "/home/pedro-pm-dias/Imagens",
+        "/home/pedro-pm-dias/snap",
+        "/home/pedro-pm-dias/Documentos",
+        "/home/pedro-pm-dias/5T1GVd01.html.part",
+        "/home/pedro-pm-dias/Certificados Udemy",
+        "/home/pedro-pm-dias/KClVbaqz.html.part",
+        "/home/pedro-pm-dias/DcpdleBP.html.part",
+        "/home/pedro-pm-dias/AMBIENTE_CRIATIVO",
+        "/home/pedro-pm-dias/Desafio",
+        "/home/pedro-pm-dias/Vídeos",
+        "/home/pedro-pm-dias/Músicas",
+        "/home/pedro-pm-dias/ubuntu24-B550M-AORUS-ELITE",
+        "/home/pedro-pm-dias/CTPSDigital_09065723986_16-12-2024 (unida).docx",
+        "/home/pedro-pm-dias/qdr_yS_D.html.part"
+    ],
+    "caminho_valido": {
+        "formato_valido": true,
+        "padrao_reconhecido": true
+    },
+    "permissao_leitura": true,
+    "data_acesso": "2025-08-04 05:14:25",
+    "data_criacao": "2025-08-04 05:14:23",
+    "data_modificacao": "2025-08-04 05:14:23",
+    "tamanho_caminho": "4.00 KB"
+}

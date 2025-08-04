@@ -3,3 +3,9 @@ extension-pkg-whitelist=pydantic
 
 [TYPECHECK]
 ignored-classes=FieldInfo
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES CONTROL]
+disable=C0301, R0903
