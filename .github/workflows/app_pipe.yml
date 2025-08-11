@@ -67,16 +67,14 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Instalar dependências
-        run: pip install -r requirements.txt -r requirements-dev.txt
+        run: pip install -r requirements.txt -r requirements-dev.txt pytest-cov
 
-      - name: Rodar testes com Coverage
-        run: coverage run -m pytest -v --maxfail=1 --disable-warnings
+      - name: Rodar testes com Coverage e gerar junit.xml
+        run: |
+          pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml -o junit_family=legacy --maxfail=1 --disable-warnings -v
 
       - name: Gerar relatório Coverage (terminal)
         run: coverage report -m
-
-      - name: Gerar XML para Codecov
-        run: coverage xml
 
       - name: Gerar HTML para inspeção
         run: coverage html
@@ -88,9 +86,18 @@ jobs:
           name: htmlcov
           path: htmlcov
 
-      - name: Enviar Cobertura para Codecov
-        uses: codecov/codecov-action@v4
+      - name: Enviar resultados de testes para Codecov
+        uses: codecov/test-results-action@v1
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: junit.xml
+          fail_ci_if_error: true
+
+      - name: Enviar cobertura para Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: DiasPedroQA/bookmark-converter
           files: ./coverage.xml
           fail_ci_if_error: true
 

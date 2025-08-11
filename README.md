@@ -2,7 +2,7 @@
 
 ![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-yellow)
-![Coverage](https://codecov.io/gh/SeuUsuario/bookmark-converter/branch/main/graph/badge.svg)
+![Coverage](https://codecov.io/gh/DiasPedroQA/bookmark-converter/branch/main/graph/badge.svg)
 [![codecov](https://codecov.io/gh/DiasPedroQA/bookmark-converter/branch/main/graph/badge.svg)](https://codecov.io/gh/DiasPedroQA/bookmark-converter)
 
 ---
