@@ -1,58 +1,113 @@
-# """
-# Módulo de definição do modelo `Arquivo`, que representa arquivos no sistema virtual.
-# """
+"""
+Modelo de dados para representar e manipular arquivos do sistema operacional.
+Inclui nome, caminho, extensão, tamanho, datas, permissões e conteúdo do arquivo.
+"""
 
-# from typing import Literal
+import os
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 
-# from pydantic import Field, field_validator, model_validator
 
-# from models.item_model import ItemDeSistema
+@dataclass
+class SistemaArquivo:
+    """
+    Representa um arquivo no sistema de arquivos.
 
+    Atributos:
+        caminho_de_arquivo (Path): Caminho absoluto do arquivo.
+    """
 
-# class ArquivoItem(ItemDeSistema):
-#     id_arquivo: str = Field(default=..., min_length=1)
-#     tipo: Literal["ARQUIVO"] = Field(default="ARQUIVO", frozen=True)
-#     extensao: str = Field(default=..., pattern=r"^\.[a-zA-Z0-9]+$")
-#     linhas: int = Field(default=..., ge=0)
-#     encoding: str = Field(default=..., pattern=r"^[\w\-]+$")  # Ex: utf-8, latin-1
+    caminho_de_arquivo: Path
 
-#     # === VALIDADORES DE CAMPO ===
+    @property
+    def nome(self) -> str:
+        """Nome do arquivo."""
+        return self.caminho_de_arquivo.name
 
-#     @field_validator("id_arquivo")
-#     def validar_id_arquivo(self, v: str) -> str:
-#         if not v.strip():
-#             raise ValueError("ID do arquivo não pode estar vazio.")
-#         return v
+    @property
+    def extensao(self) -> list[str]:
+        """Extensão do arquivo, incluindo o ponto (ex: .txt)."""
+        return self.caminho_de_arquivo.suffixes
 
-#     @field_validator("extensao")
-#     def validar_extensao_valida(self, v: str) -> str:
-#         if not v.startswith("."):
-#             raise ValueError("A extensão deve começar com ponto (ex: .txt).")
-#         if len(v) < 2:
-#             raise ValueError("Extensão inválida.")
-#         return v.lower()
+    @property
+    def tamanho_bytes(self) -> int:
+        """Tamanho do arquivo em bytes."""
+        return self.caminho_de_arquivo.stat().st_size
 
-#     @field_validator("encoding")
-#     def validar_encoding(self, v: str) -> str:
-#         encoding_suportados: set[str] = {"utf-8", "latin-1", "ascii", "utf-16"}
-#         if v.lower() not in encoding_suportados:
-#             raise ValueError(f"Encoding '{v}' não suportado.")
-#         return v.lower()
+    @property
+    def tamanho_formatado(self) -> str:
+        """
+        Tamanho do arquivo formatado de forma legível (ex: 2.34 MB).
 
-#     @field_validator("linhas")
-#     def validar_linhas(self, v: int) -> int:
-#         if v <= 0:
-#             raise ValueError("Número de linhas não pode ser negativo, nem nulo.")
-#         return v
+        Returns:
+            str: Tamanho formatado com unidade.
+        """
+        size: int | float = self.tamanho_bytes
+        for unidade in ["B", "KB", "MB", "GB", "TB"]:
+            if size < 1024:
+                return f"{size:.2f} {unidade}"
+            size /= 1024
+        return f"{size:.2f} PB"
 
-#     # === VALIDADOR DE MODELO (GERAL) ===
+    @property
+    def datas(self) -> dict[str, datetime]:
+        """
+        Datas importantes relacionadas ao arquivo.
 
-#     @model_validator(mode="after")
-#     def validar_consistencias_gerais(self) -> "ArquivoItem":
-#         if self.extensao in [".jpg", ".png", ".bin"] and self.encoding != "utf-8":
-#             raise ValueError("Arquivos binários devem usar encoding utf-8 (ou encoding default).")
-#         if self.extensao in [".py", ".txt", ".md"] and self.linhas == 0:
-#             raise ValueError("Arquivos de texto não devem ter 0 linhas.")
-#         return self
+        Returns:
+            dict[str, datetime]: Datas de acesso, criação e modificação.
+        """
+        stat: os.stat_result = self.caminho_de_arquivo.stat()
+        return {
+            "data_acesso": datetime.fromtimestamp(stat.st_atime),
+            "data_criacao": datetime.fromtimestamp(stat.st_ctime),
+            "data_modificacao": datetime.fromtimestamp(stat.st_mtime),
+        }
 
-# # criar métodos to_dict(), to_json() e __str__
+    @property
+    def permissoes(self) -> dict[str, bool]:
+        """
+        Permissões do arquivo para leitura, escrita e execução.
+
+        Returns:
+            dict[str, bool]: Dicionário com chaves leitura, escrita e execução.
+        """
+        return {
+            "leitura": os.access(self.caminho_de_arquivo, os.R_OK),
+            "escrita": os.access(self.caminho_de_arquivo, os.W_OK),
+            "execucao": os.access(self.caminho_de_arquivo, os.X_OK),
+        }
+
+    @property
+    def conteudo(self) -> str | None:
+        """
+        Tenta ler o conteúdo do arquivo como texto (UTF-8).
+
+        Returns:
+            str | None: Conteúdo textual ou None se for muito grande ou ilegível.
+        """
+        try:
+            if self.tamanho_bytes > 1024 * 1024:  # Evita abrir arquivos muito grandes
+                return None
+            return self.caminho_de_arquivo.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            return None
+
+    def informacoes(self) -> dict:
+        """
+        Retorna uma representação completa do arquivo em formato de dicionário.
+
+        Returns:
+            dict: Dicionário com todas as informações relevantes do arquivo.
+        """
+        return {
+            "nome": self.nome,
+            "caminho": str(self.caminho_de_arquivo),
+            "extensao": self.extensao,
+            "tamanho_bytes": self.tamanho_bytes,
+            "tamanho_formatado": self.tamanho_formatado,
+            "datas": self.datas,
+            "permissoes": self.permissoes,
+            "conteudo": self.conteudo,
+        }

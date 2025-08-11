@@ -1,86 +1,106 @@
-"""
-Controladores para orquestrar a coleta de dados do sistema operacional do
-usuário logado, com validação de caminho, permissões, formatação de dados
-e construção do objeto `SistemaOperacional`.
+# """
+# Controller CLI para manipulação e análise de arquivos, pastas e sistema operacional.
 
-Dependências:
-    - models.sistema_operacional_model
-    - utils.system_info
-"""
+# Principais recursos:
+# - Exibir informações do sistema
+# - Validar caminhos (arquivo ou pasta)
+# - Analisar conteúdo de arquivos
+# - Analisar conteúdo de pastas com listagem recursiva
+# - Filtrar pastas e arquivos na home
+# - Buscar arquivos por extensão
+# - Listar pastas vazias
+# - Listar maiores arquivos
+# """
 
-import json
-from json import JSONDecodeError
-from pathlib import Path
+# import re
+# import time
+# from pathlib import Path
 
-from models.sistema_operacional_model import SistemaOperacional
-from utils.system_info import (
-    bytes_para_legivel,
-    filtrar_arquivos_e_pastas,
-    formatar_data,
-    listar_subcaminhos,
-    obter_pasta_raiz_usuario,
-    tem_permissao_leitura,
-    verificar_caminho_so,
-)
+# from models.sistema_operacional_model import SistemaOperacional
 
 
-def controller_validar_so() -> Path | None:
-    """
-    Verifica se a pasta raiz do usuário logado é acessível para leitura.
+# class SistemaController:
+#     """
+#     Docstring para SistemaController
+#     """
+#     def __init__(self) -> None:
+#         """Inicializa o controller com um SistemaOperacional detectado."""
+#         self.sistema = SistemaOperacional()
 
-    Returns:
-        Path | None: Caminho da pasta se for legível, ou None caso contrário.
-    """
-    caminho_pasta_usuario: Path = obter_pasta_raiz_usuario()
-    return caminho_pasta_usuario if tem_permissao_leitura(caminho_pasta_usuario) else None
+#     # ----------------------
+#     #   MÉTODOS PRINCIPAIS
+#     # ----------------------
 
+#     def validar_caminho(self, caminho: Path) -> bool:
+#         """
+#         Valida um caminho (arquivo ou pasta) no contexto do sistema operacional atual.
+#         """
+#         return self.sistema.validar_caminho(caminho_path=caminho)
 
-def controller_gerar_json_so() -> str | None:
-    """
-    Monta um objeto `SistemaOperacional` com dados extraídos do ambiente
-    e o serializa como JSON.
+#     def listar_pastas_home(self) -> list[Path]:
+#         """Lista todas as pastas na home do usuário."""
+#         return self.sistema.pastas_publicas
 
-    Returns:
-        str | None: Representação JSON do objeto ou None se falhar.
-    """
-    caminho_validado: Path | None = controller_validar_so()
-    if not caminho_validado:
-        return None
+#     def listar_arquivos_home(self) -> list[Path]:
+#         """Lista todos os arquivos na home do usuário."""
+#         return self.sistema.arquivos_publicos
 
-    validacao_so: dict[str, bool] = verificar_caminho_so(caminho_validado)
-    if not (validacao_so["formato_valido"] and validacao_so["padrao_reconhecido"]):
-        return None
+#     # def buscar_por_extensao(self, extensao: str) -> list[Path]:
+#     #     """
+#     #     Lista arquivos na home com a extensão especificada.
+#     #     Exemplo: buscar_por_extensao('.txt')
+#     #     """
+#     #     if not extensao.startswith("."):
+#     #         extensao = "." + extensao
+#     #     return [p for p in self.sistema.arquivos_publicos if p.suffix.lower() == extensao.lower()]
 
-    sistema_identificado = SistemaOperacional(
-        usuario_logado=caminho_validado.name,
-        caminho_pasta_usuario=caminho_validado,
-        filhos_pasta_home=listar_subcaminhos(caminho_validado),
-        caminho_valido=validacao_so,
-        permissao_leitura=True,
-        data_acesso=formatar_data(caminho_validado.stat().st_atime),
-        data_criacao=formatar_data(caminho_validado.stat().st_ctime),
-        data_modificacao=formatar_data(caminho_validado.stat().st_mtime),
-        tamanho_caminho=bytes_para_legivel(caminho_validado.stat().st_size),
-    )
-    return sistema_identificado.model_dump_json(indent=4)
+#     def listar_pastas_vazias_home(self) -> list[Path]:
+#         """Lista pastas vazias na home do usuário."""
+#         return [p for p in self.sistema.pastas_publicas if not any(p.iterdir())]
 
+#     def listar_maiores_arquivos_home(self, qnte_lim_files: int = 5) -> list[Path]:
+#         """
+#         Lista os maiores arquivos na home.
+#         :param qnte_lim_files: Quantos arquivos retornar (default: 5)
+#         """
+#         arquivos: list[Path] = self.sistema.arquivos_publicos
+#         return sorted(arquivos, key=lambda p: p.stat().st_size, reverse=True)[:qnte_lim_files]
 
-def controller_listar_filhos_home() -> tuple[list[Path], list[Path]] | None:
-    """
-    Retorna as subpastas e arquivos contidos na pasta home do usuário.
+#     # ----------------------
+#     #   MÉTODOS EXTRA
+#     # ----------------------
 
-    Returns:
-        tuple[list[Path], list[Path]] | None: Listas separadas por tipo de item, ou None se falhar.
-    """
-    json_data: str | None = controller_gerar_json_so()
-    if not json_data:
-        return None
+#     def filtrar_por_regex(self, padrao: str, somente_arquivos: bool = True) -> list[Path]:
+#         """
+#         Filtra arquivos/pastas na home usando uma regex.
+#         :param padrao: Expressão regular para filtrar nomes.
+#         :param somente_arquivos: Se True, busca só arquivos. Se False, inclui pastas.
+#         """
 
-    try:
-        dados = json.loads(json_data)
-        filhos_raw = dados.get("filhos_pasta_home", [])
-        if isinstance(filhos_raw, list) and all(isinstance(item, str) for item in filhos_raw):
-            caminhos: list[Path] = [Path(p).expanduser().resolve() for p in filhos_raw]
-            return filtrar_arquivos_e_pastas(itens=caminhos)
-    except (JSONDecodeError, TypeError, KeyError):
-        return None
+#         lista: list[Path] = (
+#             self.sistema.arquivos_publicos
+#             if somente_arquivos
+#             else (self.sistema.arquivos_publicos + self.sistema.pastas_publicas)
+#         )
+#         return [p for p in lista if re.search(pattern=padrao, string=p.name)]
+
+#     def buscar_por_nome(self, nome: str, ignorar_maiusculas: bool = True) -> list[Path]:
+#         """
+#         Busca arquivos/pastas pelo nome.
+#         :param nome: Parte do nome a ser buscada.
+#         :param ignorar_maiusculas: Ignora diferenças entre maiúsculas e minúsculas.
+#         """
+#         termo: str = nome.lower() if ignorar_maiusculas else nome
+#         return [
+#             p
+#             for p in (self.sistema.arquivos_publicos + self.sistema.pastas_publicas)
+#             if (p.name.lower() if ignorar_maiusculas else p.name).find(termo) != -1
+#         ]
+
+#     def listar_modificados_recentemente(self, dias: int = 7) -> list[Path]:
+#         """
+#         Lista arquivos modificados nos últimos X dias.
+#         """
+#         agora: float = time.time()
+#         limite_segundos: int = dias * 86400
+#         return [p for p in self.sistema.arquivos_publicos if (agora - p.stat().st_mtime) <= limite_segundos]

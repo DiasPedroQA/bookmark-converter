@@ -5,20 +5,19 @@ Utilitários para manipulação do sistema operacional, validação e normaliza�
 verificação de permissões e detecção de sistema de arquivos.
 """
 
-import os
 import platform
 import re
 from pathlib import Path
 
 import psutil
 
-from .utils_comuns import normalizar_caminho
+from src.utils.main_tools import validar_caminho
 
 # Regex padrão por SO para validar caminhos
 _REGEX_PATHS: dict[str, re.Pattern[str]] = {
-    "Windows": re.compile(r"^[a-zA-Z]:\\(?:[^\\/:*?\"<>|\r\n]+\\?)*$"),
-    "Linux": re.compile(r"^(/[^/\0]+)+/?$"),
-    "Darwin": re.compile(r"^(/[^/\0]+)+/?$"),
+    "Windows": re.compile(pattern=r"^[a-zA-Z]:\\(?:[^\\/:*?\"<>|\r\n]+\\?)*$"),
+    "Linux": re.compile(pattern=r"^(/[^/\0]+)+/?$"),
+    "Darwin": re.compile(pattern=r"^(/[^/\0]+)+/?$"),
 }
 
 
@@ -32,27 +31,6 @@ def regex_caminho_sistema() -> re.Pattern:
     return _REGEX_PATHS.get(detectar_sistema(), _REGEX_PATHS["Linux"])
 
 
-def validar_caminho(caminho: str | Path) -> bool:
-    """Valida caminho conforme regex do SO atual após normalizar."""
-    caminho_str = str(normalizar_caminho(caminho))
-    return bool(regex_caminho_sistema().fullmatch(caminho_str))
-
-
-def verificar_permissoes(caminho: str | Path) -> dict[str, bool]:
-    """Verifica permissões de leitura, escrita e execução no caminho."""
-    path = normalizar_caminho(caminho)
-    return {
-        "ler": os.access(path, os.R_OK),
-        "escrever": os.access(path, os.W_OK),
-        "executar": os.access(path, os.X_OK),
-    }
-
-
-def tem_permissao_leitura(caminho: Path) -> bool:
-    """Checa se o usuário tem permissão de leitura no caminho."""
-    return os.access(caminho, os.R_OK)
-
-
 def verificar_caminho_so(caminho: str | Path) -> dict[str, bool]:
     """
     Checa se o caminho tem formato válido e reconhece padrões típicos do SO.
@@ -62,7 +40,7 @@ def verificar_caminho_so(caminho: str | Path) -> dict[str, bool]:
             - formato_valido (bool): corresponde ao formato regex base do SO
             - padrao_reconhecido (bool): corresponde a algum padrão típico (apps, configs, etc)
     """
-    caminho_str = str(normalizar_caminho(caminho=caminho))
+    caminho_str = str(validar_caminho(caminho_comum=caminho))
     so: str = detectar_sistema().lower()
     regex_base: str = {
         "windows": r"^[a-zA-Z]:\\(?:[^\\/:*?\"<>|\r\n]+\\?)*$",
@@ -85,23 +63,6 @@ def obter_pasta_raiz_usuario(caminho_base: str | None = None) -> Path:
     """Retorna pasta raiz do usuário ou caminho base passado, normalizado."""
     base: Path = Path(caminho_base) if caminho_base else Path.home()
     return base.expanduser().resolve()
-
-
-def filtrar_arquivos_e_pastas(itens: list[Path]) -> tuple[list[Path], list[Path]]:
-    """Separa lista em duas: (pastas, arquivos)."""
-    pastas: list[Path] = [i for i in itens if i.is_dir()]
-    arquivos: list[Path] = [i for i in itens if i.is_file()]
-    return pastas, arquivos
-
-
-def listar_subcaminhos(pasta_base: Path, ignorar_ocultos: bool = True) -> list[Path]:
-    """Lista itens não ocultos em pasta_base, ignorando erros de permissão."""
-    if not pasta_base.exists() or not pasta_base.is_dir():
-        return []
-    try:
-        return [item for item in pasta_base.iterdir() if not (ignorar_ocultos and item.name.startswith("."))]
-    except PermissionError:
-        return []
 
 
 def detectar_sistema_arquivos(caminho: Path) -> dict[str, str]:

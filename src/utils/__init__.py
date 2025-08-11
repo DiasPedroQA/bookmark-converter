@@ -1,70 +1,70 @@
 """
-Docstring para utils
+Módulo utilitário de acesso unificado às funções de manipulação
+de arquivos, pastas e sistema operacional.
+
+Este módulo agrega funções importadas de outros submódulos
+(`file_tools`, `folder_tools`, `main_tools` e `system_tools`)
+em um único ponto de acesso, facilitando a importação e a
+organização do código.
+
+Funcionalidades abrangem:
+- Manipulação de arquivos e pastas
+- Leitura e escrita de conteúdo
+- Filtragem e busca por critérios
+- Validação e análise de caminhos
+- Detecção e informações sobre o sistema operacional
 """
 
-from .sistema_arquivos import (
+from src.utils.file_tools import escrever_conteudo_texto, ler_conteudo_texto
+from src.utils.folder_tools import (
     buscar_por_extensao,
-    filtrar_apenas_arquivos,
-    obter_datas_arquivo,
-    obter_extensao_arquivo,
-    obter_tamanho_arquivo,
-    tem_permissao_leitura_arquivo,
-)
-
-from .sistema_operacional import (
-    detectar_sistema,
-    detectar_sistema_arquivos,
-    filtrar_arquivos_e_pastas,
-    listar_subcaminhos,
-    obter_pasta_raiz_usuario,
-    regex_caminho_sistema,
-    tem_permissao_leitura,
-    validar_caminho,
-    verificar_caminho_so,
-    verificar_permissoes,
-)
-
-from .sistema_pastas import (
     calcular_profundidade,
-    filtrar_apenas_pastas,
     filtrar_arquivos,
     filtrar_pastas,
-    listar_conteudo_detalhado,
     listar_pastas_vazias,
+    listar_subcaminhos,
+)
+from src.utils.main_tools import (
+    get_caminho_relativo,
+    get_datas,
+    get_id,
+    get_montagem_origem,
+    get_nome,
+    get_permissoes,
+    is_hidden_path,
+    obter_tamanho,
+    validar_caminho,
 )
 
-from .utils_comuns import (
-    coletar_datas_aprimoradas,
-    formatar_tamanho,
-    normalizar_caminho,
+from .system_tools import (
+    detectar_sistema,
+    detectar_sistema_arquivos,
+    obter_pasta_raiz_usuario,
+    regex_caminho_sistema,
+    verificar_caminho_so,
 )
 
 __all__: list[str] = [
-    "obter_tamanho_arquivo",
-    "obter_extensao_arquivo",
-    "obter_datas_arquivo",
-    "tem_permissao_leitura_arquivo",
-    "filtrar_apenas_arquivos",
     "buscar_por_extensao",
-    "coletar_datas_aprimoradas",
+    "calcular_profundidade",
     "detectar_sistema",
     "detectar_sistema_arquivos",
-    "filtrar_arquivos_e_pastas",
+    "escrever_conteudo_texto",
+    "filtrar_arquivos",
+    "filtrar_pastas",
+    "get_caminho_relativo",
+    "get_datas",
+    "get_id",
+    "get_montagem_origem",
+    "get_nome",
+    "get_permissoes",
+    "ler_conteudo_texto",
+    "listar_pastas_vazias",
     "listar_subcaminhos",
     "obter_pasta_raiz_usuario",
+    "obter_tamanho",
     "regex_caminho_sistema",
-    "tem_permissao_leitura",
     "validar_caminho",
     "verificar_caminho_so",
-    "verificar_permissoes",
-    "normalizar_caminho",
-    "coletar_datas_aprimoradas",
-    "formatar_tamanho",
-    "listar_subcaminhos",
-    "filtrar_apenas_pastas",
-    "filtrar_pastas",
-    "filtrar_arquivos",
-    "listar_pastas_vazias",
-    "calcular_profundidade",
-    "listar_conteudo_detalhado",
+    "is_hidden_path",
 ]
