@@ -1,5 +1,8 @@
 # 📚 Bookmark Converter
 
+Ferramenta modular para converter bookmarks entre HTML e JSON, com suporte a CLI, API REST (FastAPI) e futura GUI.  
+Focada em TDD, CI/CD e ambientes profissionais.
+
 [![Coverage](https://codecov.io/gh/DiasPedroQA/bookmark-converter/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/DiasPedroQA/bookmark-converter)
 [![Coverage](https://codecov.io/gh/DiasPedroQA/bookmark-converter/branch/main/graph/badge.svg?flag=frontend)](https://codecov.io/gh/DiasPedroQA/bookmark-converter)
 [![Coverage](https://codecov.io/gh/DiasPedroQA/bookmark-converter/branch/main/graph/badge.svg?flag=integration)](https://codecov.io/gh/DiasPedroQA/bookmark-converter)
@@ -8,123 +11,103 @@
 
 ## ⚙️ Funcionalidades
 
-- ✅ Leitura e parsing de arquivos HTML (ex.: exportados do Chrome ou Firefox)
-- ✅ Conversão para JSON estruturado (ex.: Brave, Vivaldi)
-- ✅ Interfaces:
-  - CLI (linha de comando com subcomandos)
-  - API REST (FastAPI + Swagger)
-  - GUI (futuramente com Tkinter)
-- ✅ Arquitetura modular com FastAPI, Pydantic e BeautifulSoup
-- ✅ Pronto para TDD, CI, Docker e ambientes profissionais
+- Leitura e parsing de bookmarks em HTML (Chrome, Firefox)
+- Conversão para JSON estruturado (ex.: Brave, Vivaldi)
+- Interfaces:
+  - CLI com subcomandos intuitivos
+  - API REST com FastAPI + Swagger
+  - GUI planejada com Tkinter
+- Arquitetura modular e escalável
+- Pronto para TDD, CI/CD, Docker e ambientes profissionais
 
 ---
 
-## 🚀 Demonstração (CLI)
+## 🚀 Uso rápido (CLI)
 
 ```bash
-$ bookmark-converter exportar favoritos.html favoritos.json
-✔ Exportado `favoritos.html` → `favoritos.json`
+# Exporta HTML → JSON
+bookmark-converter exportar favoritos.html favoritos.json
 
-$ bookmark-converter importar favoritos.json favoritos.html
-✔ Importado `favoritos.json` → `favoritos.html`
+# Importa JSON → HTML
+bookmark-converter importar favoritos.json favoritos.html
 
-$ bookmark-converter --help
-usage: bookmark-converter [subcommand] [options]
-
-Positional arguments:
-  subcommand
-    exportar       Converte HTML → JSON
-    importar       Converte JSON → HTML
-
-Options:
-  -h, --help       Exibe a ajuda
+# Ajuda geral
+bookmark-converter --help
 ````
 
 ---
 
 ## 🛠️ Instalação
 
-> **Pré-requisitos**: Python ≥ 3.10
-
-### Clonando o repositório
+### Clone + virtualenv + dependências
 
 ```bash
 git clone https://github.com/DiasPedroQA/bookmark-converter.git
 cd bookmark-converter
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 ```
 
-### Ou instale via `pip`
+### Ou via pip (se publicado)
 
 ```bash
 pip install bookmark-converter
 ```
 
-### Rodar a API REST (FastAPI)
+### Rodar API REST (FastAPI)
 
 ```bash
 uvicorn src.interfaces.api.main_api:app --reload
-# Acesse http://127.0.0.1:8000/docs
+# Acesse: http://127.0.0.1:8000/docs
 ```
 
 ---
 
-## 📂 Estrutura do Projeto
+## 📂 Estrutura do projeto
 
 ```text
 bookmark-converter/
 ├── src/
-│   ├── core/
-│   │   ├── models/         # Schemas Pydantic
-│   │   └── converters/     # Lógica de conversão entre formatos
-│   └── interfaces/
-│       ├── cli/            # Interface CLI
-│       └── api/            # Interface REST
-├── tests/                  # Testes automatizados (pytest)
-├── .github/                # Actions, workflows e configs
-├── Makefile                # Comandos: test, lint, format, run
-├── requirements.in/.txt    # Gerência de dependências (pip-tools)
-├── pyproject.toml          # Configurações de build, lint, format
-├── .pre-commit-config.yaml # Hooks de qualidade de código
-├── mkdocs.yml              # Documentação técnica com MkDocs
-└── README.md               # Este arquivo
+│   ├── core/             # Models e lógica de conversão
+│   └── interfaces/       # CLI, API REST, GUI futura
+├── tests/                # Testes (pytest)
+├── .github/              # Workflows, templates, ações
+├── Makefile              # Comandos úteis (test, lint, run)
+├── requirements*.txt     # Dependências
+├── pyproject.toml        # Configs de build e lint
+└── README.md             # Documentação principal
 ```
 
 ---
 
 ## ✅ Como contribuir
 
-1. Faça um fork do projeto
-2. Crie uma branch (`git checkout -b feature/nome`)
-3. Adicione sua funcionalidade com testes
-4. Rode os comandos de qualidade:
+1. Faça fork e branch (`feature/nome`)
+2. Implemente com testes
+3. Rode qualidade e testes:
 
 ```bash
-make test
 make lint
+make test
 make format
 ```
 
-```text
-Submeta um Pull Request com descrição clara e exemplos de uso
-```
+## Abra Pull Request com descrição clara e exemplos
 
 ---
 
 ## 📌 Roadmap
 
 - ✅ Conversão HTML ↔ JSON
-- ☐ Suporte a novos formatos (Markdown, XML, Netscape Bookmark File)
-- ☐ Interface gráfica com Tkinter
-- ☐ Publicação no PyPI + automação CI/CD via GitHub Actions
-- ☐ Suporte a leitura direta de favoritos do navegador
+- ☐ GUI Tkinter
+- ☐ Publicação PyPI + CI/CD completo
+- ☐ Leitura direta dos bookmarks do navegador
+- ☐ Suporte a novos formatos (Markdown, XML, Netscape)
 
 ---
 
 ## 📖 Documentação
 
-Acesse a documentação gerada com MkDocs (em construção):
+Gerada com MkDocs (em construção):
 
 ```bash
 mkdocs serve
@@ -135,15 +118,6 @@ mkdocs serve
 
 ## 📝 Licença
 
-Distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais informações.
-
----
-
-### ℹ️ Justificativas de Design
-
-- Seções claras e organizadas para facilitar onboarding
-- Exemplos de uso real e argumentos CLI para fácil compreensão
-- Estrutura modular pronta para expansão
-- Suporte total a testes, lint, formatação e documentação
+MIT — veja [LICENSE](LICENSE)
 
 ---

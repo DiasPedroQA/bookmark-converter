@@ -1,7 +1,7 @@
 # 📚 `mkdocs.yml` base moderna
 
 site_name: Bookmark Converter
-repo_url: https://github.com/seuusuario/bookmark-converter
+repo_url: https://github.com/DiasPedroQA/bookmark-converter
 repo_name: GitHub
 theme:
   name: material
