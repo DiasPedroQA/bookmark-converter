@@ -1,150 +1,157 @@
 """
-utils_pastas.py
----------------
-Funções para manipulação e análise de diretórios.
+folder_tools.py
+---------------------
+Funções utilitárias para manipulação e análise de diretórios.
 
 Objetivos:
-- Listar conteúdo de pastas com filtros e detalhes.
-- Calcular tamanho, profundidade e estatísticas de diretórios.
-- Garantir segurança e consistência via normalização e validação.
+- Listar conteúdo de pastas com filtros.
+- Calcular profundidade e encontrar pastas vazias.
+- Buscar arquivos por extensão.
 
-Principais consumidores:
-- SistemaPasta
-- SistemaOperacional (para validação)
+Depende de utils_common para:
+- Validação de caminho
+- Detecção de ocultos
 """
 
 from pathlib import Path
 
-from src.utils.main_tools import is_hidden_path, validar_caminho
+from src.utils.main_tools import is_hidden_path, validate_path
+
+PathLike = str | Path
+
+# ---------------------
+# Funções privadas
+# ---------------------
 
 
-def listar_subcaminhos(pasta_base: Path, ignorar_ocultos: bool = True) -> list[Path]:
+def _safe_iterdir(directory: Path, ignore_hidden: bool) -> list[Path]:
+    """Itera sobre itens de diretório, ignorando ocultos se pedido, tratando exceções."""
+    try:
+        return [item for item in directory.iterdir() if not (ignore_hidden and is_hidden_path(path_neutral=item))]
+    except PermissionError:
+        return []
+
+
+# ---------------------
+# Funções públicas
+# ---------------------
+
+
+def list_all_children(base_folder: PathLike, ignore_hidden: bool = True) -> list[Path]:
     """
-    Lista arquivos e pastas dentro de uma pasta.
+    Lista arquivos e pastas dentro de um diretório.
 
     Args:
-        pasta_base (Path): Diretório base para listagem.
-        ignorar_ocultos (bool): Se True, ignora itens ocultos (nomes começando com '.').
+        base_folder (PathLike): Diretório base para listagem.
+        ignore_hidden (bool): Se True, ignora itens ocultos (nomes começando com '.').
 
     Returns:
         list[Path]: Caminhos filhos válidos.
     """
-    if not validar_caminho(caminho_comum=pasta_base) or not pasta_base.is_dir():
+    base_folder = validate_path(path_neutral=base_folder)
+    if not base_folder.is_dir():
         return []
 
-    try:
-        return [item for item in pasta_base.iterdir() if not (ignorar_ocultos and is_hidden_path(caminho_comum=item))]
-    except PermissionError:
-        return []
+    return _safe_iterdir(directory=base_folder, ignore_hidden=ignore_hidden)
 
 
-def filtrar_pastas(itens: list[Path]) -> list[Path]:
+def filter_for_folders(items: list[Path]) -> list[Path]:
     """
-    Retorna apenas os diretórios da lista.
+    Filtra e retorna apenas os diretórios da lista.
 
     Args:
-        itens (list[Path]): Lista de caminhos.
+        items (list[Path]): Lista de caminhos.
 
     Returns:
         list[Path]: Apenas diretórios.
     """
-    return [item for item in itens if item.is_dir()]
+    return [item for item in items if item.is_dir()]
 
 
-def filtrar_arquivos(itens: list[Path]) -> list[Path]:
+def filter_for_files(items: list[Path]) -> list[Path]:
     """
-    Retorna apenas os arquivos da lista.
+    Filtra e retorna apenas os arquivos da lista.
 
     Args:
-        itens (list[Path]): Lista de caminhos.
+        items (list[Path]): Lista de caminhos.
 
     Returns:
         list[Path]: Apenas arquivos.
     """
-    return [item for item in itens if item.is_file()]
+    return [item for item in items if item.is_file()]
 
 
-def listar_pastas_vazias(pasta_base: Path) -> list[Path]:
+def list_empty_folders(base_folder: PathLike) -> list[Path]:
     """
-    Retorna as pastas vazias dentro da pasta base.
+    Lista pastas sem conteúdo dentro de um diretório.
 
     Args:
-        pasta_base (Path): Diretório base para busca.
+        base_folder (PathLike): Diretório base para busca.
 
     Returns:
-        list[Path]: Pastas que não possuem conteúdo.
+        list[Path]: Pastas vazias.
     """
-    itens: list[Path] = listar_subcaminhos(pasta_base=pasta_base)
-    pastas: list[Path] = filtrar_pastas(itens=itens)
-    return [pasta for pasta in pastas if not any(pasta.iterdir())]
+    children: list[Path] = list_all_children(base_folder=base_folder)
+    folders: list[Path] = filter_for_folders(items=children)
+    return [folder for folder in folders if not any(folder.iterdir())]
 
 
-def calcular_profundidade(pasta_base: Path) -> int:
+def calculate_depth(base_folder: PathLike) -> int:
     """
     Calcula a profundidade máxima da árvore de diretórios.
 
     Args:
-        pasta_base (Path): Diretório base.
+        base_folder (PathLike): Diretório base.
 
     Returns:
-        int: Profundidade máxima (0 se pasta vazia ou inválida).
+        int: Profundidade máxima (0 se inválida).
     """
-    if not validar_caminho(caminho_comum=pasta_base) or not pasta_base.is_dir():
+    base_folder = validate_path(path_neutral=base_folder)
+    if not base_folder.is_dir():
         return 0
 
     max_depth = 0
-    base_parts: int = len(pasta_base.parts)
+    base_parts: int = len(base_folder.parts)
 
-    for path in pasta_base.rglob("*"):
-        if path.is_dir():
-            depth: int = len(path.parts) - base_parts
-            if depth > max_depth:
-                max_depth: int = depth
+    try:
+        for path in base_folder.rglob(pattern="*"):
+            if path.is_dir():
+                depth: int = len(path.parts) - base_parts
+                if depth > max_depth:
+                    max_depth: int = depth
+    except PermissionError:
+        pass
+
     return max_depth
 
 
-def buscar_por_extensao(pasta_base: Path, extensao: str) -> list[Path]:
+def search_by_extension(base_folder: PathLike, extension: str) -> list[Path]:
     """
-    Busca arquivos na pasta base com a extensão especificada (case insensitive).
-    Suporta extensões compostas, tipo '.tar.gz'.
+    Busca arquivos na pasta base com a extensão especificada (case-insensitive).
+    Suporta extensões compostas como '.tar.gz'.
 
     Args:
-        pasta_base (Path): Diretório base para busca.
-        extensao (str): Extensão completa com ponto, ex: '.txt' ou '.tar.gz'
+        base_folder (PathLike): Diretório base para busca.
+        extension (str): Extensão, ex: '.txt' ou '.tar.gz'.
 
     Returns:
-        list[Path]: Arquivos que correspondem à extensão.
+        list[Path]: Arquivos correspondentes.
     """
-    if not validar_caminho(caminho_comum=pasta_base) or not pasta_base.is_dir():
+    base_folder = validate_path(path_neutral=base_folder)
+    if not base_folder.is_dir():
         return []
 
-    ext_lower: str = extensao.lower()
-    # Quebra extensão em lista pra comparar com suffixes
-    ext_list: list[str] = ext_lower.split(".")
+    ext_lower: str = extension.lower().lstrip(".")
+    ext_parts: list[str] = ext_lower.split(".")
 
-    # Remove o primeiro item se for vazio (porque começa com '.')
-    if ext_list and ext_list[0] == "":
-        ext_list = ext_list[1:]
-
+    results: list[Path] = []
     try:
-        resultados: list[Path] = []
-        for arquivo in pasta_base.iterdir():
-            if arquivo.is_file():
-                # suffixes é lista com os pontos, ex: ['.tar', '.gz']
-                suffixes_lower: list[str] = [suf.lower().lstrip(".") for suf in arquivo.suffixes]
-                if suffixes_lower[-len(ext_list) :] == ext_list:
-                    resultados.append(arquivo)
-        print(f"{len(resultados)} arquivo(s) (ext={extensao}) encontrado(s)")
-        return resultados
+        for file in base_folder.iterdir():
+            if file.is_file():
+                suffixes: list[str] = [s.lstrip(".").lower() for s in file.suffixes]
+                if suffixes[-len(ext_parts) :] == ext_parts:
+                    results.append(file)
     except PermissionError:
-        return []
+        pass
 
-
-# if __name__ == "__main__":
-#     exemplo_path: Path = Path("~").expanduser()
-#     lista_caminhos: list[Path] = listar_subcaminhos(pasta_base=exemplo_path)
-#     print("filtrar_pastas ->", filtrar_pastas(itens=lista_caminhos))
-#     print("filtrar_arquivos ->", filtrar_arquivos(itens=lista_caminhos))
-#     print("listar_pastas_vazias ->", listar_pastas_vazias(pasta_base=exemplo_path))
-#     print("calcular_profundidade ->", calcular_profundidade(pasta_base=exemplo_path))
-#     print("buscar_por_extensao ->", buscar_por_extensao(pasta_base=exemplo_path, extensao="html"))
+    return results

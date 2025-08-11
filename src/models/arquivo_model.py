@@ -3,14 +3,24 @@ Modelo de dados para representar e manipular arquivos do sistema operacional.
 Inclui nome, caminho, extensão, tamanho, datas, permissões e conteúdo do arquivo.
 """
 
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from src.utils.file_tools import read_text_content
+from src.utils.main_tools import (
+    get_dates,
+    get_id,
+    get_name,
+    get_permissions,
+    get_size,
+    is_hidden_path,
+    validate_path,
+)
+
 
 @dataclass
-class SistemaArquivo:
+class ModeloDeArquivo:
     """
     Representa um arquivo no sistema de arquivos.
 
@@ -23,17 +33,17 @@ class SistemaArquivo:
     @property
     def nome(self) -> str:
         """Nome do arquivo."""
-        return self.caminho_de_arquivo.name
+        return get_name(path_neutral=self.caminho_de_arquivo)
+
+    @property
+    def id_arquivo(self) -> str:
+        """Id do arquivo."""
+        return get_id(path_neutral=self.caminho_de_arquivo)
 
     @property
     def extensao(self) -> list[str]:
         """Extensão do arquivo, incluindo o ponto (ex: .txt)."""
         return self.caminho_de_arquivo.suffixes
-
-    @property
-    def tamanho_bytes(self) -> int:
-        """Tamanho do arquivo em bytes."""
-        return self.caminho_de_arquivo.stat().st_size
 
     @property
     def tamanho_formatado(self) -> str:
@@ -43,7 +53,7 @@ class SistemaArquivo:
         Returns:
             str: Tamanho formatado com unidade.
         """
-        size: int | float = self.tamanho_bytes
+        size: int | float = get_size(path_neutral=self.caminho_de_arquivo)
         for unidade in ["B", "KB", "MB", "GB", "TB"]:
             if size < 1024:
                 return f"{size:.2f} {unidade}"
@@ -58,12 +68,7 @@ class SistemaArquivo:
         Returns:
             dict[str, datetime]: Datas de acesso, criação e modificação.
         """
-        stat: os.stat_result = self.caminho_de_arquivo.stat()
-        return {
-            "data_acesso": datetime.fromtimestamp(stat.st_atime),
-            "data_criacao": datetime.fromtimestamp(stat.st_ctime),
-            "data_modificacao": datetime.fromtimestamp(stat.st_mtime),
-        }
+        return get_dates(path_neutral=self.caminho_de_arquivo)
 
     @property
     def permissoes(self) -> dict[str, bool]:
@@ -73,41 +78,33 @@ class SistemaArquivo:
         Returns:
             dict[str, bool]: Dicionário com chaves leitura, escrita e execução.
         """
-        return {
-            "leitura": os.access(self.caminho_de_arquivo, os.R_OK),
-            "escrita": os.access(self.caminho_de_arquivo, os.W_OK),
-            "execucao": os.access(self.caminho_de_arquivo, os.X_OK),
-        }
+        return get_permissions(path_neutral=self.caminho_de_arquivo)
 
     @property
-    def conteudo(self) -> str | None:
+    def conteudo(self) -> str:
         """
         Tenta ler o conteúdo do arquivo como texto (UTF-8).
 
         Returns:
-            str | None: Conteúdo textual ou None se for muito grande ou ilegível.
+            str: Conteúdo textual do arquivo.
         """
-        try:
-            if self.tamanho_bytes > 1024 * 1024:  # Evita abrir arquivos muito grandes
-                return None
-            return self.caminho_de_arquivo.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
-            return None
+        return read_text_content(file_path=self.caminho_de_arquivo)
 
-    def informacoes(self) -> dict:
+    def informacoes(self) -> dict[str, str | Path | list[str] | dict[str, datetime] | dict[str, bool]] | None:
         """
         Retorna uma representação completa do arquivo em formato de dicionário.
 
         Returns:
             dict: Dicionário com todas as informações relevantes do arquivo.
         """
-        return {
-            "nome": self.nome,
-            "caminho": str(self.caminho_de_arquivo),
-            "extensao": self.extensao,
-            "tamanho_bytes": self.tamanho_bytes,
-            "tamanho_formatado": self.tamanho_formatado,
-            "datas": self.datas,
-            "permissoes": self.permissoes,
-            "conteudo": self.conteudo,
-        }
+        if not is_hidden_path(path_neutral=self.caminho_de_arquivo):
+            return {
+                "nome": self.nome,
+                "caminho": validate_path(path_neutral=self.caminho_de_arquivo),
+                "extensao": self.extensao,
+                "tamanho_formatado": self.tamanho_formatado,
+                "datas": self.datas,
+                "permissoes": self.permissoes,
+                "conteudo": self.conteudo,
+            }
+        return None

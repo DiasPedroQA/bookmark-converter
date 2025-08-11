@@ -19,7 +19,7 @@
 # from models.sistema_operacional_model import SistemaOperacional
 
 
-# class SistemaController:
+# class ModeloDeController:
 #     """
 #     Docstring para SistemaController
 #     """

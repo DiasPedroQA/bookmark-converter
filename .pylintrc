@@ -8,4 +8,4 @@ ignored-classes=FieldInfo
 max-line-length=120
 
 [MESSAGES CONTROL]
-disable=C0301, R0903, R0911
+disable=C0301, R0903, R0911, W0212, W0621

@@ -7,7 +7,7 @@
 # Utiliza funções utilitárias de:
 # - sistema_arquivos (filtros, buscas por extensão)
 # - sistema_pastas (filtros, listagem recursiva de pastas vazias)
-# - utils_comuns (normalização de caminhos)
+# - main_tools (normalização de caminhos)
 # - utils_so (validação de permissões e formatos de caminho)
 # """
 
@@ -28,7 +28,7 @@
 
 
 # @dataclass(frozen=True)
-# class SistemaOperacional:
+# class ModeloDeOperacional:
 #     """
 #     Representa o sistema operacional local e fornece métodos para interagir com
 #     o sistema de arquivos do usuário logado, incluindo listagens e validações.

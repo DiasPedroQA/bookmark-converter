@@ -1,5 +1,5 @@
 """
-Módulo que define a classe SistemaPasta para manipulação de diretórios no sistema de arquivos.
+Módulo que define a classe ModeloDePasta para manipulação de diretórios no sistema de arquivos.
 Inclui listagem de arquivos e pastas, propriedades como tamanho, permissões, datas, e mais.
 """
 
@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 @dataclass
-class SistemaPasta:
+class ModeloDePasta:
     """Classe para representar e manipular informações de uma pasta no sistema de arquivos."""
 
     caminho_de_pasta: Path

@@ -277,7 +277,7 @@ htmlcov/
 local_settings.py
 celerybeat-schedule
 celerybeat.pid
-**/*.ipynb
+**/init.ipynb
 
 # ========================================
 # 📚 Notebooks e dados interativos

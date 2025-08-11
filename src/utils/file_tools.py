@@ -1,75 +1,68 @@
 """
-file_utils.py
-----------------
-Utilitários para manipulação completa de arquivos de texto.
+file_tools.py
+-------------------
+Funções utilitárias para manipulação de arquivos de texto.
 
-Reúne funções para obter metadados detalhados e ler/escrever conteúdo
-de arquivos texto, reutilizando funções base do main_utils.py.
+Objetivos:
+- Ler e escrever conteúdo de arquivos texto.
+- Garantir validação e segurança.
 """
 
 from pathlib import Path
 
-from src.utils.main_tools import validar_caminho
+from src.utils.main_tools import validate_path
+
+PathLike = str | Path
+
+# ---------------------
+# Funções públicas
+# ---------------------
 
 
-def ler_conteudo_texto(caminho_comum: str | Path, encoding: str = "utf-8") -> str:
+def read_text_content(file_path: PathLike, encoding: str = "utf-8") -> str:
     """
-    Lê o conteúdo do arquivo texto.
+    Lê o conteúdo de um arquivo de texto.
 
     Args:
-        caminho_comum (str | Path): Caminho do arquivo.
+        file_path (PathLike): Caminho do arquivo.
         encoding (str): Codificação para leitura (default utf-8).
 
     Returns:
         str: Conteúdo do arquivo.
 
     Raises:
-        FileNotFoundError, UnicodeDecodeError, PermissionError
+        FileNotFoundError: Se o caminho não existir ou não for arquivo.
+        UnicodeDecodeError: Se a decodificação falhar.
+        PermissionError: Se não houver permissão de leitura.
     """
-    validar_caminho(caminho_comum=caminho_comum)
-    p = Path(caminho_comum)
-    if not p.is_file():
-        raise FileNotFoundError(f"Não é um arquivo: {p}")
-    with p.open("r", encoding=encoding) as f:
+    path: Path = validate_path(path_neutral=file_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Não é um arquivo válido: {path}")
+    with path.open(mode="r", encoding=encoding) as f:
         return f.read()
 
 
-def escrever_conteudo_texto(caminho_comum: str | Path, conteudo: str, encoding: str = "utf-8") -> None:
+def write_text_content(file_path: PathLike, content: str, encoding: str = "utf-8") -> None:
     """
-    Escreve conteúdo texto no arquivo, sobrescrevendo o existente.
+    Escreve conteúdo de texto em um arquivo, sobrescrevendo o existente.
 
     Args:
-        caminho_comum (str | Path): Caminho do arquivo.
-        conteudo (str): Texto a ser escrito.
+        file_path (PathLike): Caminho do arquivo.
+        content (str): Texto a ser escrito.
         encoding (str): Codificação para escrita (default utf-8).
+
+    Raises:
+        PermissionError: Se não houver permissão de escrita.
     """
-    p = Path(caminho_comum)
-    with p.open("w", encoding=encoding) as f:
-        f.write(conteudo)
+    path = Path(file_path)
+    with path.open(mode="w", encoding=encoding) as f:
+        f.write(content)
 
 
-# ARQUIVO = "/home/pedro-pm-dias/teste.html"
+def create_text_file(file_path: PathLike, content: str, encoding: str = "utf-8") -> None:
+    """
+    Cria um arquivo texto (sobrescreve se existir).
 
-# # ler conteúdo
-# texto: str = ler_conteudo_texto(caminho_comum=ARQUIVO)
-# print(f"\n texto => {texto}")
-
-# # escrever conteúdo novo
-# try:
-#     escrever_conteudo_texto(caminho_comum=ARQUIVO, conteudo="""<!DOCTYPE html>
-# <html lang="pt-br">
-
-#     <head>
-#         <meta charset="UTF-8">
-#         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-#         <title>Documento Atualizado</title>
-#     </head>
-
-#     <body>
-#         <h1>ATUALIZADO</h1>
-#     </body>
-
-# </html>""")
-#     print("\n Escrita bem sucedida!")
-# except Exception as err:
-#     print(f"Erro: {err}")
+    Usa internamente write_text_content para evitar duplicação.
+    """
+    write_text_content(file_path=file_path, content=content, encoding=encoding)
