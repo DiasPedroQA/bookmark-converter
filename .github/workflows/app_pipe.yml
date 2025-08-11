@@ -16,7 +16,6 @@ jobs:
   lint-and-quality:
     name: 🔍 Lint e Qualidade de Código
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -47,90 +46,122 @@ jobs:
         run: |
           pylint src/ tests/ || echo "⚠️ Pylint encontrou problemas, mas o job continuará."
 
-  test-and-upload:
-    name: 🧪 Testes + Upload Coverage
+  test-backend-unit:
+    name: 🧪 Testes Backend Unitários
     runs-on: ubuntu-latest
     needs: lint-and-quality
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Instalar dependências Python e Codecov
+      
+      - name: Instalar dependências backend
         run: pip install -r requirements.txt -r requirements-dev.txt pytest pytest-cov codecov
-
-      # Backend Unit Tests
-      - name: Rodar testes backend (unit) com coverage
-        run: |
-          pytest --cov=src/backend --cov-report=xml:coverage-backend.xml tests/backend/unit/
-
-      - name: Upload cobertura backend unit para Codecov
+      
+      - name: Rodar testes backend unitários
+        run: pytest --cov=src/backend --cov-report=xml:coverage-backend.xml tests/backend/unit/
+      
+      - name: Upload coverage backend unit
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage-backend.xml
           flags: backend,unit
 
-      - name: Upload resultados backend unit
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+  test-backend-integration:
+    name: 🧪 Testes Backend Integração
+    runs-on: ubuntu-latest
+    needs: lint-and-quality
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./unit-backend.junit.xml
-          flags: backend,unit
-
-      # Backend Integration Tests
-      - name: Rodar testes backend (integration) com coverage
-        run: |
-          pytest --cov=src/backend --cov-report=xml:coverage-backend-integration.xml tests/backend/integration/
-
-      - name: Upload cobertura backend integration para Codecov
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Instalar dependências backend
+        run: pip install -r requirements.txt -r requirements-dev.txt pytest pytest-cov codecov
+      
+      - name: Rodar testes backend integração
+        run: pytest --cov=src/backend --cov-report=xml:coverage-backend-integration.xml tests/backend/integration/
+      
+      - name: Upload coverage backend integração
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage-backend-integration.xml
           flags: backend,integration
 
-      # Frontend Unit Tests
+  test-frontend-unit:
+    name: 🧪 Testes Frontend Unitários
+    runs-on: ubuntu-latest
+    needs: lint-and-quality
+    steps:
+      - uses: actions/checkout@v4
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
+      
       - name: Instalar dependências frontend
         run: npm install
-
-      - name: Rodar testes frontend (unit) com coverage
+      
+      - name: Rodar testes frontend unitários com coverage
         run: npm run test -- --coverage --coverageReporters=lcov --coverageReporters=cobertura
-
-      - name: Upload cobertura frontend unit para Codecov
+      
+      - name: Upload coverage frontend unit
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/cobertura-frontend.xml
           flags: frontend,unit
 
-      # Frontend E2E Tests
-      - name: Rodar testes frontend (e2e)
+  test-frontend-e2e:
+    name: 🧪 Testes Frontend E2E
+    runs-on: ubuntu-latest
+    needs: lint-and-quality
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      - name: Instalar dependências frontend
+        run: npm install
+      
+      - name: Rodar testes frontend e2e com coverage
         run: npm run test:e2e -- --coverage --coverageReporters=cobertura
-
-      - name: Upload cobertura frontend e2e para Codecov
+      
+      - name: Upload coverage frontend e2e
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/cobertura-frontend-e2e.xml
           flags: frontend,e2e
 
-      # Integration Tests (Full Stack)
-      - name: Rodar testes de integração (full) com coverage
-        run: |
-          pytest --cov=tests/integration --cov-report=xml:coverage-integration.xml tests/integration/
-
-      - name: Upload cobertura integração para Codecov
+  test-full-integration:
+    name: 🧪 Testes de Integração Full Stack
+    runs-on: ubuntu-latest
+    needs: lint-and-quality
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Instalar dependências testes integração
+        run: pip install -r requirements.txt -r requirements-dev.txt pytest pytest-cov codecov
+      
+      - name: Rodar testes de integração full com coverage
+        run: pytest --cov=tests/integration --cov-report=xml:coverage-integration.xml tests/integration/
+      
+      - name: Upload coverage integração full
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -141,13 +172,19 @@ jobs:
     name: 🔐 Análise de Segurança (Bandit)
     runs-on: ubuntu-latest
     needs: lint-and-quality
-
     steps:
       - uses: actions/checkout@v4
-
+      
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PIP_CACHE_DIR }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Rodar Bandit
         run: |
@@ -157,9 +194,8 @@ jobs:
   create-issue-on-failure:
     name: 🚨 Criar Issue em caso de falha
     runs-on: ubuntu-latest
-    needs: [lint-and-quality, test-and-upload, security]
+    needs: [lint-and-quality, test-backend-unit, test-backend-integration, test-frontend-unit, test-frontend-e2e, test-full-integration, security]
     if: failure()
-
     steps:
       - name: Criar Issue no GitHub em caso de falha
         env:
