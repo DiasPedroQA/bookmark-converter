@@ -61,7 +61,7 @@ iniconfig==2.1.0
     # via pytest
 ipdb==0.13.13
     # via -r requirements-dev.in
-ipython==8.37.0
+ipython==9.4.0
     # via ipdb
 isort==6.0.1
     # via
