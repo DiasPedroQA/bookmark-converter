@@ -11,10 +11,10 @@ Importe deste módulo para facilitar o acesso às classes sem precisar referenci
 
 from .arquivo_model import ModeloDeArquivo
 from .pasta_model import ModeloDePasta
-from .sistema_operacional_model import SistemaOperacional
+# from .sistema_operacional_model import SistemaOperacional
 
 __all__: list[str] = [
     "ModeloDePasta",
-    "SistemaOperacional",
+    # "SistemaOperacional",
     "ModeloDeArquivo",
 ]

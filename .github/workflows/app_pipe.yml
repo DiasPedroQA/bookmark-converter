@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main, develop]
   schedule:
-    - cron: '40 17 * * 3'  # Toda quarta-feira às 17:40 UTC
+    - cron: '40 17 * * 3'  # Toda quarta às 17:40 UTC
 
 env:
   PYTHON_VERSION: '3.12'
@@ -31,7 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Instalar dependências
+      - name: Instalar dependências Python
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-dev.txt
@@ -47,93 +47,95 @@ jobs:
         run: |
           pylint src/ tests/ || echo "⚠️ Pylint encontrou problemas, mas o job continuará."
 
-  test-linux:
-    name: 🐧 Testes com Coverage (Linux)
+  test-and-upload:
+    name: 🧪 Testes + Upload Coverage
     runs-on: ubuntu-latest
     needs: lint-and-quality
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      - name: Instalar dependências Python e Codecov
+        run: pip install -r requirements.txt -r requirements-dev.txt pytest pytest-cov codecov
 
-      - name: Instalar dependências
-        run: pip install -r requirements.txt -r requirements-dev.txt pytest-cov
-
-      - name: Rodar testes com Coverage e gerar junit.xml
+      # Backend Unit Tests
+      - name: Rodar testes backend (unit) com coverage
         run: |
-          pytest --cov --cov-branch --cov-report=xml --junitxml=junit.xml -o junit_family=legacy --maxfail=1 --disable-warnings -v
+          pytest --cov=src/backend --cov-report=xml:coverage-backend.xml tests/backend/unit/
 
-      - name: Gerar relatório Coverage (terminal)
-        run: coverage report -m
-
-      - name: Gerar HTML para inspeção
-        run: coverage html
-
-      - name: Upload do htmlcov
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: htmlcov
-          path: htmlcov
-
-      - name: Enviar resultados de testes para Codecov
-        uses: codecov/test-results-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: junit.xml
-          fail_ci_if_error: true
-
-      - name: Enviar cobertura para Codecov
+      - name: Upload cobertura backend unit para Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: DiasPedroQA/bookmark-converter
-          files: ./coverage.xml
-          fail_ci_if_error: true
+          files: ./coverage-backend.xml
+          flags: backend,unit
 
-  test-windows:
-    name: 🪟 Testes no Windows
-    runs-on: windows-latest
-    needs: lint-and-quality
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v4
+      - name: Upload resultados backend unit
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./unit-backend.junit.xml
+          flags: backend,unit
 
-      - name: Instalar dependências
+      # Backend Integration Tests
+      - name: Rodar testes backend (integration) com coverage
         run: |
-          pip install -r requirements.txt -r requirements-dev.txt
-          pytest -v --maxfail=1 --disable-warnings
+          pytest --cov=src/backend --cov-report=xml:coverage-backend-integration.xml tests/backend/integration/
 
-  test-macos:
-    name: 🍎 Testes no macOS
-    runs-on: macos-latest
-    needs: lint-and-quality
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v4
+      - name: Upload cobertura backend integration para Codecov
+        uses: codecov/codecov-action@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage-backend-integration.xml
+          flags: backend,integration
 
-      - name: Instalar dependências
+      # Frontend Unit Tests
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Instalar dependências frontend
+        run: npm install
+
+      - name: Rodar testes frontend (unit) com coverage
+        run: npm run test -- --coverage --coverageReporters=lcov --coverageReporters=cobertura
+
+      - name: Upload cobertura frontend unit para Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/cobertura-frontend.xml
+          flags: frontend,unit
+
+      # Frontend E2E Tests
+      - name: Rodar testes frontend (e2e)
+        run: npm run test:e2e -- --coverage --coverageReporters=cobertura
+
+      - name: Upload cobertura frontend e2e para Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/cobertura-frontend-e2e.xml
+          flags: frontend,e2e
+
+      # Integration Tests (Full Stack)
+      - name: Rodar testes de integração (full) com coverage
         run: |
-          pip install -r requirements.txt -r requirements-dev.txt
-          pytest -v --maxfail=1 --disable-warnings
+          pytest --cov=tests/integration --cov-report=xml:coverage-integration.xml tests/integration/
+
+      - name: Upload cobertura integração para Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage-integration.xml
+          flags: integration
 
   security:
     name: 🔐 Análise de Segurança (Bandit)
@@ -155,7 +157,7 @@ jobs:
   create-issue-on-failure:
     name: 🚨 Criar Issue em caso de falha
     runs-on: ubuntu-latest
-    needs: [lint-and-quality, test-linux, test-windows, test-macos, security]
+    needs: [lint-and-quality, test-and-upload, security]
     if: failure()
 
     steps:

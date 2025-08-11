@@ -1,0 +1,190 @@
+# ============================
+# Configurações gerais do Codecov
+# ============================
+codecov:
+  branch: main
+  strict_yaml_branch: main
+  max_report_age: "12h"
+
+# ============================
+# Flags para agrupar cobertura
+# ============================
+flags:
+  backend:
+    paths:
+      - src/backend/**
+    carryforward: true
+  frontend:
+    paths:
+      - src/frontend/**
+    carryforward: true
+  unit:
+    paths:
+      - tests/unit/**
+    carryforward: true
+  integration:
+    paths:
+      - tests/integration/**
+    carryforward: true
+  e2e:
+    paths:
+      - tests/e2e/**
+    carryforward: true
+
+# ============================
+# Regras gerais de cobertura
+# ============================
+coverage:
+  precision: 2
+  round: "down"
+  range: "70..100"
+
+  status:
+    default_rules:
+      flag_coverage_not_uploaded_behavior: exclude
+
+    project:
+      default:
+        target: "85"
+        threshold: "2"
+        base: auto
+        if_ci_failed: error
+        only_pulls: true
+        informational: false
+
+      backend:
+        target: "90"
+        paths:
+          - "src/backend/**"
+        only_pulls: true
+
+      frontend:
+        target: "85"
+        paths:
+          - "src/frontend/**"
+        only_pulls: true
+
+      integration:
+        target: "75"
+        paths:
+          - "tests/integration/**"
+        only_pulls: true
+
+    patch:
+      default:
+        target: "80"
+        threshold: "5"
+        base: auto
+        only_pulls: true
+        if_ci_failed: error
+
+# ============================
+# Ignorar pastas na cobertura geral
+# ============================
+ignore:
+  - "tests/*"
+
+# ============================
+# Comentário no PR
+# ============================
+comment:
+  require_changes: true
+  layout: "header, diff, flags, components, files, footer"
+
+# ============================
+# Component Management unificado
+# ============================
+component_management:
+  individual_components:
+    # --- BACKEND ---
+    - component_id: backend_core
+      name: Backend Core
+      paths:
+        - "src/backend/core/**"
+      flags:
+        - backend
+      statuses:
+        - type: project
+          target: "90"
+
+    - component_id: backend_api
+      name: Backend API
+      paths:
+        - "src/backend/api/**"
+      flags:
+        - backend
+      statuses:
+        - type: project
+          target: "90"
+
+    - component_id: backend_services
+      name: Backend Services
+      paths:
+        - "src/backend/services/**"
+      flags:
+        - backend
+      statuses:
+        - type: project
+          target: "90"
+
+    # --- FRONTEND ---
+    - component_id: frontend_ui
+      name: Frontend UI
+      paths:
+        - "src/frontend/ui/**"
+      flags:
+        - frontend
+      statuses:
+        - type: project
+          target: "85"
+
+    - component_id: frontend_components
+      name: Frontend Components
+      paths:
+        - "src/frontend/components/**"
+      flags:
+        - frontend
+      statuses:
+        - type: project
+          target: "85"
+
+    - component_id: frontend_utils
+      name: Frontend Utils
+      paths:
+        - "src/frontend/utils/**"
+      flags:
+        - frontend
+      statuses:
+        - type: project
+          target: "85"
+
+    # --- PIRÂMIDE DE TESTES ---
+    - component_id: unit_tests
+      name: Unit Tests
+      paths:
+        - "tests/unit/**"
+      flags:
+        - unit
+      statuses:
+        - type: project
+          target: "95"
+
+    - component_id: integration_tests
+      name: Integration Tests
+      paths:
+        - "tests/integration/**"
+      flags:
+        - integration
+      statuses:
+        - type: project
+          target: "75"
+
+    - component_id: e2e_tests
+      name: E2E Tests
+      paths:
+        - "tests/e2e/**"
+      flags:
+        - e2e
+      statuses:
+        - type: project
+          target: "70"
