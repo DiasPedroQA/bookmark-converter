@@ -15,21 +15,21 @@ Funcionalidades abrangem:
 - Detecção e informações sobre o sistema operacional
 """
 
-from src.utils.file_tools import read_text_content, write_text_content
-from src.utils.folder_tools import (
+from utils.file_tools import read_text_content, write_text_content
+from utils.folder_tools import (
     calculate_depth,
     filter_for_files,
     filter_for_folders,
-    list_all_children,
+    list_all_non_empty_children,
     list_empty_folders,
     search_by_extension,
 )
-from src.utils.main_tools import (
-    get_dates,
-    get_id,
-    get_name,
-    get_permissions,
-    get_size,
+from utils.main_tools import (
+    get_dates_path,
+    get_id_path,
+    get_name_path,
+    get_permissions_path,
+    get_size_path,
     is_hidden_path,
     validate_path,
 )
@@ -43,7 +43,7 @@ from .system_tools import (
 )
 
 __all__: list[str] = [
-    "list_all_children",
+    "list_all_non_empty_children",
     "filter_for_folders",
     "filter_for_files",
     "list_empty_folders",
@@ -52,17 +52,19 @@ __all__: list[str] = [
     "detect_system",
     "detect_filesystem",
     "get_user_root_folder",
-    "get_dates",
-    "get_id",
-    "get_name",
-    "get_permissions",
+    "get_dates_path",
+    "get_id_path",
+    "get_name_path",
+    "get_permissions_path",
+    "get_size_path",
     "system_path_regex",
     "validate_os_path",
-    "get_size",
     "read_text_content",
     "validate_path",
     "write_text_content",
     "is_hidden_path",
-    "list_all_children",
+    "list_all_non_empty_children",
     "filter_for_files",
+    "list_all_non_empty_children",
+    "list_all_non_empty_children",
 ]

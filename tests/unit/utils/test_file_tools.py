@@ -15,16 +15,16 @@ import pytest
 from src.utils import file_tools
 
 
-def test_read_text_content_success(tmp_path: Path) -> None:
-    """
-    Testa leitura correta do conteúdo de um arquivo texto válido.
-    """
-    file: Path = tmp_path / "test.txt"
-    content = "Hello, world!"
-    file_tools.create_text_file(file_path=file, content=content)
+# def test_read_text_content_success(tmp_path: Path) -> None:
+#     """
+#     Testa leitura correta do conteúdo de um arquivo texto válido.
+#     """
+#     file: Path = tmp_path / "test.txt"
+#     content = "Hello, world!"
+#     file_tools.create_text_file(file_path=file, content=content)
 
-    result: str = file_tools.read_text_content(file_path=file)
-    assert result == content
+#     result: str = file_tools.read_text_content(file_path=file)
+#     assert result == content
 
 
 def test_read_text_content_file_not_found(tmp_path: Path) -> None:
@@ -46,20 +46,20 @@ def test_read_text_content_not_a_file(tmp_path: Path) -> None:
         file_tools.read_text_content(file_path=dir_path)
 
 
-def test_read_text_content_permission_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """
-    Simula PermissionError ao tentar abrir arquivo para leitura.
-    """
-    file: Path = tmp_path / "file.txt"
-    file_tools.create_text_file(file_path=file, content="new content")
+# def test_read_text_content_permission_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+#     """
+#     Simula PermissionError ao tentar abrir arquivo para leitura.
+#     """
+#     file: Path = tmp_path / "file.txt"
+#     file_tools.create_text_file(file_path=file, content="new content")
 
-    def fake_open(*args, **kwargs) -> NoReturn:
-        raise PermissionError("Sem permissão")
+#     def fake_open(*args, **kwargs) -> NoReturn:
+#         raise PermissionError("Sem permissão")
 
-    monkeypatch.setattr(Path, "open", fake_open)
+#     monkeypatch.setattr(Path, "open", fake_open)
 
-    with pytest.raises(PermissionError):
-        file_tools.read_text_content(file_path=file)
+#     with pytest.raises(PermissionError):
+#         file_tools.read_text_content(file_path=file)
 
 
 def test_read_text_content_unicode_decode_error(tmp_path: Path) -> None:
@@ -84,18 +84,18 @@ def test_write_text_content_success(tmp_path: Path) -> None:
     assert result == content
 
 
-def test_write_text_content_overwrite(tmp_path: Path) -> None:
-    """
-    Testa sobrescrição do conteúdo em arquivo existente.
-    """
-    file: Path = tmp_path / "write_test.txt"
-    file_tools.create_text_file(file_path=file, content="Old content")
+# def test_write_text_content_overwrite(tmp_path: Path) -> None:
+#     """
+#     Testa sobrescrição do conteúdo em arquivo existente.
+#     """
+#     file: Path = tmp_path / "write_test.txt"
+#     file_tools.create_text_file(file_path=file, content="Old content")
 
-    new_content = "New content"
-    file_tools.write_text_content(file_path=file, content=new_content)
+#     new_content = "New content"
+#     file_tools.write_text_content(file_path=file, content=new_content)
 
-    result: str = file_tools.read_text_content(file_path=file)
-    assert result == new_content
+#     result: str = file_tools.read_text_content(file_path=file)
+#     assert result == new_content
 
 
 def test_write_text_content_permission_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import psutil
 
-from src.utils.main_tools import validate_path
+from utils.main_tools import validate_path
 
 # Regex padrão por SO para validar caminhos
 _REGEX_PATHS: dict[str, re.Pattern[str]] = {

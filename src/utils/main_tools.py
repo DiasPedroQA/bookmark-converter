@@ -17,14 +17,12 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-PathLike = str | Path
-
 # ---------------------
 # Funções privadas
 # ---------------------
 
 
-def _get_absolute_path(path_neutral: PathLike) -> Path:
+def _get_absolute_path(path_neutral: str | Path) -> Path:
     """Retorna o caminho absoluto normalizado."""
     return Path(path_neutral).resolve()
 
@@ -45,7 +43,7 @@ def _scan_directory(directory: Path, max_depth: int, current_depth: int = 1) -> 
                 if item.is_file():
                     total_bytes += item.stat().st_size
                 elif item.is_dir():
-                    total_bytes += _scan_directory(item, max_depth, current_depth + 1)
+                    total_bytes += _scan_directory(directory=item, max_depth=max_depth, current_depth=current_depth + 1)
             except (FileNotFoundError, PermissionError, OSError):
                 continue
     except (FileNotFoundError, PermissionError, OSError):
@@ -58,25 +56,25 @@ def _scan_directory(directory: Path, max_depth: int, current_depth: int = 1) -> 
 # ---------------------
 
 
-def validate_path(path_neutral: PathLike) -> Path:
+def validate_path(path_neutral: str | Path) -> Path:
     """Valida se o caminho existe no sistema de arquivos."""
-    abs_path: Path = _get_absolute_path(path_neutral)
+    abs_path: Path = _get_absolute_path(path_neutral=path_neutral)
     if not abs_path.exists():
         raise FileNotFoundError(f"Caminho não encontrado: {abs_path}")
     return abs_path
 
 
-def get_id(path_neutral: PathLike) -> str:
+def get_id_path(path_neutral: str | Path) -> str:
     """Gera um identificador único (UUID5) com base no caminho absoluto."""
     return str(uuid.uuid5(uuid.NAMESPACE_URL, str(_get_absolute_path(path_neutral))))
 
 
-def get_name(path_neutral: PathLike) -> str:
+def get_name_path(path_neutral: str | Path) -> str:
     """Retorna o nome do arquivo ou pasta."""
     return Path(path_neutral).name
 
 
-def get_size(path_neutral: PathLike, max_depth: int = 30) -> int:
+def get_size_path(path_neutral: str | Path, max_depth: int = 30) -> int:
     """Retorna o tamanho total em bytes de um arquivo ou pasta."""
     p = Path(path_neutral)
     if p.is_file():
@@ -85,11 +83,11 @@ def get_size(path_neutral: PathLike, max_depth: int = 30) -> int:
         except (FileNotFoundError, PermissionError, OSError):
             return 0
     if p.is_dir():
-        return _scan_directory(p, max_depth)
+        return _scan_directory(directory=p, max_depth=max_depth)
     return 0
 
 
-def get_dates(path_neutral: PathLike) -> dict[str, datetime]:
+def get_dates_path(path_neutral: str | Path) -> dict[str, datetime]:
     """Retorna as datas de criação, modificação e último acesso."""
     st: os.stat_result = Path(path_neutral).stat()
     return {
@@ -99,7 +97,7 @@ def get_dates(path_neutral: PathLike) -> dict[str, datetime]:
     }
 
 
-def get_permissions(path_neutral: PathLike) -> dict[str, bool]:
+def get_permissions_path(path_neutral: str | Path) -> dict[str, bool]:
     """Retorna permissões de leitura, escrita e execução."""
     p = Path(path_neutral)
     return {
@@ -109,6 +107,6 @@ def get_permissions(path_neutral: PathLike) -> dict[str, bool]:
     }
 
 
-def is_hidden_path(path_neutral: PathLike) -> bool:
+def is_hidden_path(path_neutral: str | Path) -> bool:
     """Verifica se o arquivo ou pasta é oculto."""
     return Path(path_neutral).name.startswith(".")

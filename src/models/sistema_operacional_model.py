@@ -1,112 +1,147 @@
-# """
-# Módulo sistema_operacional_model.py
+"""
+Módulo sistema_operacional_model.py
 
-# Modelo que representa o sistema operacional local, suas informações básicas
-# e oferece métodos para listar arquivos, pastas e validar caminhos com base nas regras do SO.
+Modelo que representa o sistema operacional local, suas informações básicas
+e oferece métodos para listar arquivos, pastas e validar caminhos com base nas regras do SO.
 
-# Utiliza funções utilitárias de:
-# - sistema_arquivos (filtros, buscas por extensão)
-# - sistema_pastas (filtros, listagem recursiva de pastas vazias)
-# - main_tools (normalização de caminhos)
-# - utils_so (validação de permissões e formatos de caminho)
-# """
+Utiliza funções utilitárias de:
+- sistema_arquivos (filtros, buscas por extensão)
+- sistema_pastas (filtros, listagem recursiva de pastas vazias)
+- main_tools (normalização de caminhos)
+- utils_so (validação de permissões e formatos de caminho)
+"""
 
-# import platform
-# from dataclasses import dataclass, field
-# from getpass import getuser
-# from pathlib import Path
+import platform
+from dataclasses import dataclass, field
+from getpass import getuser
+from pathlib import Path
 
-# from utils.file_tools import buscar_por_extensao, filtrar_apenas_arquivos
-# from utils.system_tools import tem_permissao_leitura, verificar_caminho_so
-# from utils.folder_tools import (
-#     filtrar_pastas,
-#     listar_pastas_vazias,
-# )
-# from src.utils.main_tools import (
-#     normalizar_caminho,
-# )
+from models.arquivo_model import ModeloDeArquivo
+from models.pasta_model import ModeloDePasta
+from utils.folder_tools import (
+    list_empty_folders,
+    search_by_extension,
+)
+from utils.main_tools import (
+    is_hidden_path,
+)
 
 
-# @dataclass(frozen=True)
-# class ModeloDeOperacional:
-#     """
-#     Representa o sistema operacional local e fornece métodos para interagir com
-#     o sistema de arquivos do usuário logado, incluindo listagens e validações.
-#     """
+@dataclass(frozen=True, slots=True)
+class SistemaOperacional:
+    """
+    Representa o sistema operacional local e provê métodos para manipular o sistema
+    de arquivos do usuário atual, incluindo listagens e validações.
 
-#     nome_so: str = field(default_factory=platform.system)
-#     versao: str = field(default_factory=platform.version)
-#     usuario_logado: str = field(default_factory=getuser)
-#     pasta_usuario: Path = field(default_factory=Path.home)
-#     arquitetura: str = field(default_factory=lambda: platform.architecture()[0])
+    Attributes:
+        nome_so (str): Nome do sistema operacional.
+        versao (str): Versão do sistema operacional.
+        usuario_logado (str): Nome do usuário logado.
+        pasta_usuario (Path): Diretório home do usuário.
+        arquitetura (str): Arquitetura da máquina (ex: '64bit').
+    """
 
-#     @property
-#     def arquivos_publicos(self) -> list[Path]:
-#         """
-#         Retorna lista dos arquivos visíveis (não ocultos) na pasta home do usuário.
-#         """
-#         return filtrar_apenas_arquivos(self.pasta_usuario.iterdir())
+    nome_so: str = field(default_factory=platform.system)
+    versao: str = field(default_factory=platform.version)
+    usuario_logado: str = field(default_factory=getuser)
+    pasta_usuario: Path = field(default_factory=Path.home)
+    arquitetura: str = field(default_factory=lambda: platform.architecture()[0])
 
-#     @property
-#     def pastas_publicas(self) -> list[Path]:
-#         """
-#         Retorna lista das pastas visíveis (não ocultas) na pasta home do usuário.
-#         """
-#         return filtrar_pastas(itens=self.pasta_usuario.iterdir())
+    @property
+    def arquivos_publicos(self) -> list[ModeloDeArquivo]:
+        """
+        Lista os arquivos visíveis (não ocultos) na pasta home do usuário,
+        representados como objetos ModeloDeArquivo.
 
-#     def listar_pastas_vazias_home(self) -> list[Path]:
-#         """
-#         Retorna todas as pastas vazias dentro da pasta home, recursivamente.
-#         """
-#         return listar_pastas_vazias(self.pasta_usuario)
+        Returns:
+            list[ModeloDeArquivo]: Lista de arquivos.
+        """
+        try:
+            itens: list[Path] = [
+                p for p in self.pasta_usuario.iterdir() if p.is_file() and not is_hidden_path(path_neutral=p)
+            ]
+            return [ModeloDeArquivo(file_path=p) for p in itens]
+        except PermissionError:
+            return []
 
-#     def listar_maiores_arquivos_home(self, qnte_lim_files: int = 5) -> list[Path]:
-#         """
-#         Retorna os maiores arquivos da pasta home, limitados por qnte_lim_files.
-#         """
-#         arquivos: list[Path] = filtrar_apenas_arquivos(paths=self.pasta_usuario.iterdir())
-#         return sorted(arquivos, key=lambda p: p.stat().st_size, reverse=True)[:qnte_lim_files]
+    @property
+    def pastas_publicas(self) -> list[ModeloDePasta]:
+        """
+        Lista as pastas visíveis (não ocultas) na pasta home do usuário,
+        representadas como objetos ModeloDePasta.
 
-#     def buscar_por_extensao_home(self, extensao: str) -> list[Path]:
-#         """
-#         Busca arquivos na pasta home que tenham a extensão passada (ex: '.txt').
-#         """
-#         return buscar_por_extensao(pasta=self.pasta_usuario, extensao=extensao)
+        Returns:
+            list[ModeloDePasta]: Lista de pastas.
+        """
+        try:
+            return [
+                ModeloDePasta(folder_path=p)
+                for p in self.pasta_usuario.iterdir()
+                if p.is_dir() and not is_hidden_path(path_neutral=p)
+            ]
+        except PermissionError:
+            return []
 
-#     def informacoes(self) -> dict:
-#         """
-#         Retorna um dicionário com informações básicas do SO, usuário e arquivos/pastas públicos.
-#         """
-#         return {
-#             "nome_so": self.nome_so,
-#             "versao": self.versao,
-#             "usuario_logado": self.usuario_logado,
-#             "pasta_usuario": str(self.pasta_usuario),
-#             "arquitetura": self.arquitetura,
-#             "arquivos_publicos": [str(p) for p in self.arquivos_publicos],
-#             "pastas_publicas": [str(p) for p in self.pastas_publicas],
-#         }
+    def listar_pastas_vazias_home(self) -> list[Path]:
+        """
+        Retorna todas as pastas vazias dentro da pasta home, recursivamente.
 
-#     def validar_caminho(self, caminho_path: Path) -> bool:
-#         """
-#         Valida se o caminho existe, se tem permissão de leitura e se o formato do caminho
-#         bate com as regras do sistema operacional atual.
+        Returns:
+            list[Path]: Pastas vazias.
+        """
+        try:
+            return list_empty_folders(base_folder=self.pasta_usuario)
+        except PermissionError:
+            return []
 
-#         Retorna True se válido, False caso contrário.
-#         """
-#         caminho_normal = normalizar_caminho(caminho_path)
+    def listar_maiores_arquivos_home(self, qnte_lim_files: int = 5):
+        """
+        Retorna os maiores arquivos da pasta home, limitados pela quantidade passada.
 
-#         if not caminho_normal.exists():
-#             print("❌ Caminho não existe.")
-#             return False
+        Args:
+            qnte_lim_files (int): Quantidade limite de arquivos a retornar.
 
-#         if not tem_permissao_leitura(caminho_normal):
-#             print("❌ Sem permissão de leitura.")
-#             return False
+        Returns:
+            list[Path]: Lista dos maiores arquivos.
+        """
+        try:
+            arquivos: list[ModeloDeArquivo] = [
+                ModeloDeArquivo(file_path=p)
+                for p in self.pasta_usuario.iterdir()
+                if p.is_file() and not is_hidden_path(path_neutral=p)
+            ]
+            return sorted(arquivos, key=lambda p: p.file_path.stat().st_size, reverse=True)[:qnte_lim_files]
+        except PermissionError:
+            return []
 
-#         formato_ok = verificar_caminho_so(caminho_normal).get("formato_valido", False)
-#         if not formato_ok:
-#             print("❌ Caminho inválido para este SO.")
-#             return False
+    def buscar_por_extensao_home(self, extensao: str) -> list[Path]:
+        """
+        Busca arquivos na pasta home que tenham a extensão especificada (case-insensitive).
 
-#         return True
+        Args:
+            extensao (str): Extensão do arquivo (ex: '.txt').
+
+        Returns:
+            list[Path]: Lista de arquivos encontrados.
+        """
+        try:
+            return search_by_extension(base_folder=self.pasta_usuario, extension=extensao)
+        except PermissionError:
+            return []
+
+    def informacoes(self) -> dict[str, str | list[str]]:
+        """
+        Retorna informações básicas do sistema operacional, usuário e arquivos/pastas públicos.
+
+        Returns:
+            Dict[str, Union[str, list[str]]]: Dicionário com as informações.
+        """
+        return {
+            "nome_so": self.nome_so,
+            "versao": self.versao,
+            "usuario_logado": self.usuario_logado,
+            "pasta_usuario": str(self.pasta_usuario),
+            "arquitetura": self.arquitetura,
+            "arquivos_publicos": [str(arquivo.file_path) for arquivo in self.arquivos_publicos],
+            "pastas_publicas": [str(pasta.folder_path) for pasta in self.pastas_publicas],
+        }

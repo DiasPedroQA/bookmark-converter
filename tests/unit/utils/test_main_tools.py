@@ -109,8 +109,8 @@ def test_get_id_consistency(temp_file_fixture: Path) -> None:
     Asserts:
         Dois UUIDs gerados são iguais e válidos.
     """
-    id1: str = main_tools.get_id(path_neutral=temp_file_fixture)
-    id2: str = main_tools.get_id(path_neutral=str(temp_file_fixture.resolve()))
+    id1: str = main_tools.get_id_path(path_neutral=temp_file_fixture)
+    id2: str = main_tools.get_id_path(path_neutral=str(temp_file_fixture.resolve()))
     assert id1 == id2
     assert isinstance(uuid.UUID(id1), uuid.UUID)
 
@@ -126,8 +126,8 @@ def test_get_name(temp_file_fixture: Path, temp_hidden_file_fixture: Path) -> No
     Asserts:
         Nome do arquivo normal e oculto estão corretos.
     """
-    assert main_tools.get_name(path_neutral=temp_file_fixture) == "testfile.txt"
-    assert main_tools.get_name(path_neutral=temp_hidden_file_fixture) == ".hiddenfile"
+    assert main_tools.get_name_path(path_neutral=temp_file_fixture) == "testfile.txt"
+    assert main_tools.get_name_path(path_neutral=temp_hidden_file_fixture) == ".hiddenfile"
 
 
 def test_get_size_file(temp_file_fixture: Path) -> None:
@@ -140,7 +140,7 @@ def test_get_size_file(temp_file_fixture: Path) -> None:
     Asserts:
         Tamanho retornado bate com o tamanho real do arquivo.
     """
-    size: int = main_tools.get_size(path_neutral=temp_file_fixture)
+    size: int = main_tools.get_size_path(path_neutral=temp_file_fixture)
     assert size == temp_file_fixture.stat().st_size
 
 
@@ -154,7 +154,7 @@ def test_get_size_directory(temp_dir_with_files_fixture: Path) -> None:
     Asserts:
         Tamanho somado dos arquivos é igual ao tamanho retornado.
     """
-    size: int = main_tools.get_size(path_neutral=temp_dir_with_files_fixture)
+    size: int = main_tools.get_size_path(path_neutral=temp_dir_with_files_fixture)
     expected: int = sum(f.stat().st_size for f in temp_dir_with_files_fixture.iterdir())
     assert size == expected
 
@@ -170,7 +170,7 @@ def test_get_size_nonexistent(tmp_path: Path) -> None:
         Valor retornado é zero.
     """
     p: Path = tmp_path / "nonexistent"
-    assert main_tools.get_size(path_neutral=p) == 0
+    assert main_tools.get_size_path(path_neutral=p) == 0
 
 
 def test_get_dates(temp_file_fixture: Path) -> None:
@@ -183,7 +183,7 @@ def test_get_dates(temp_file_fixture: Path) -> None:
     Asserts:
         Dicionário contém datetime para criação, modificação e acesso.
     """
-    dates: dict[str, datetime] = main_tools.get_dates(path_neutral=temp_file_fixture)
+    dates: dict[str, datetime] = main_tools.get_dates_path(path_neutral=temp_file_fixture)
     assert isinstance(dates, dict)
     assert all(isinstance(v, datetime) for v in dates.values())
 
@@ -201,7 +201,7 @@ def test_get_permissions(tmp_path: Path) -> None:
     """
     file: Path = tmp_path / "perm_test.txt"
     file.write_text("test")
-    perms: dict[str, bool] = main_tools.get_permissions(path_neutral=file)
+    perms: dict[str, bool] = main_tools.get_permissions_path(path_neutral=file)
     assert perms["read"] is True
     assert perms["write"] is True
     assert isinstance(perms["execute"], bool)
