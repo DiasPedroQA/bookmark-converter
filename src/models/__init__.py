@@ -2,19 +2,17 @@
 Módulo de agregação de modelos do sistema de arquivos.
 
 Fornece acesso centralizado às classes principais:
-- ModeloDeArquivo: manipulação de arquivos individuais.
-- ModeloDePasta: gerenciamento de pastas e listagem de conteúdo.
-- SistemaOperacional: abstração do sistema operacional com validação de caminhos e permissões.
-
-Importe deste módulo para facilitar o acesso às classes sem precisar referenciar seus caminhos internos.
+- FileModel: manipulação de arquivos individuais.
+- FolderModel: gerenciamento de pastas e listagem de conteúdo.
+- OSModel: abstração do sistema operacional com validação de caminhos e permissões.
 """
 
-from .arquivo_model import ModeloDeArquivo
-from .pasta_model import ModeloDePasta
-# from .sistema_operacional_model import SistemaOperacional
+# from .arquivo_model import FileModel
+# from .folder_model import FolderModel
+# from .sistema_operacional_model import OSModel
 
-__all__: list[str] = [
-    "ModeloDePasta",
-    # "SistemaOperacional",
-    "ModeloDeArquivo",
-]
+# __all__: list[str] = [
+#     "FolderModel",
+#     "OSModel",
+#     "FileModel",
+# ]

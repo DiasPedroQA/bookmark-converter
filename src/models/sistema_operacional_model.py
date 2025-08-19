@@ -1,147 +1,64 @@
 """
-Módulo sistema_operacional_model.py
+system_os_model.py
+------------------
 
-Modelo que representa o sistema operacional local, suas informações básicas
-e oferece métodos para listar arquivos, pastas e validar caminhos com base nas regras do SO.
-
-Utiliza funções utilitárias de:
-- sistema_arquivos (filtros, buscas por extensão)
-- sistema_pastas (filtros, listagem recursiva de pastas vazias)
-- main_tools (normalização de caminhos)
-- utils_so (validação de permissões e formatos de caminho)
+Modelo avançado para interação com o sistema operacional.
 """
 
-import platform
-from dataclasses import dataclass, field
-from getpass import getuser
-from pathlib import Path
-
-from models.arquivo_model import ModeloDeArquivo
-from models.pasta_model import ModeloDePasta
-from utils.folder_tools import (
-    list_empty_folders,
-    search_by_extension,
-)
-from utils.main_tools import (
-    is_hidden_path,
+from utils.system_tools import (
+    system_method_obter_caminho_usuario,
+    system_method_obter_endereco_ip,
+    system_method_obter_espaco_disco_livre,
+    system_method_obter_info_plataforma,
+    system_method_obter_nome_sistema_operacional,
+    system_method_obter_nome_usuario,
+    system_method_obter_versao_kernel,
 )
 
 
-@dataclass(frozen=True, slots=True)
-class SistemaOperacional:
-    """
-    Representa o sistema operacional local e provê métodos para manipular o sistema
-    de arquivos do usuário atual, incluindo listagens e validações.
+class OSModel:
+    """Modelo para abstrair interações com o sistema operacional e centralizar
+    as funcionalidades de arquivos e pastas."""
 
-    Attributes:
-        nome_so (str): Nome do sistema operacional.
-        versao (str): Versão do sistema operacional.
-        usuario_logado (str): Nome do usuário logado.
-        pasta_usuario (Path): Diretório home do usuário.
-        arquitetura (str): Arquitetura da máquina (ex: '64bit').
-    """
+    def __init__(self) -> None:
+        # Propriedades básicas do SO
+        self.sys_data_os_name: str = system_method_obter_nome_sistema_operacional()
+        self.sys_data_hostname: str = system_method_obter_endereco_ip()
+        self.sys_data_user_name: str = system_method_obter_nome_usuario()
+        self.sys_data_user_home: str = system_method_obter_caminho_usuario()
+        self.sys_data_ip_address: str = system_method_obter_endereco_ip()
+        self.sys_data_kernel_version: str = system_method_obter_versao_kernel()
+        self.sys_data_platform_info: str = system_method_obter_info_plataforma()
 
-    nome_so: str = field(default_factory=platform.system)
-    versao: str = field(default_factory=platform.version)
-    usuario_logado: str = field(default_factory=getuser)
-    pasta_usuario: Path = field(default_factory=Path.home)
-    arquitetura: str = field(default_factory=lambda: platform.architecture()[0])
+        # Espaço em disco (no root por padrão)
+        self.sys_data_disk_free_space: int = system_method_obter_espaco_disco_livre(caminho="/")
 
-    @property
-    def arquivos_publicos(self) -> list[ModeloDeArquivo]:
-        """
-        Lista os arquivos visíveis (não ocultos) na pasta home do usuário,
-        representados como objetos ModeloDeArquivo.
+        # Sub-modelos
+        # self._folder_model = FolderModel(caminho_da_pasta=self.user_home)
 
-        Returns:
-            list[ModeloDeArquivo]: Lista de arquivos.
-        """
-        try:
-            itens: list[Path] = [
-                p for p in self.pasta_usuario.iterdir() if p.is_file() and not is_hidden_path(path_neutral=p)
-            ]
-            return [ModeloDeArquivo(file_path=p) for p in itens]
-        except PermissionError:
-            return []
+    # --------------------------
+    # Representação
+    # --------------------------
 
-    @property
-    def pastas_publicas(self) -> list[ModeloDePasta]:
-        """
-        Lista as pastas visíveis (não ocultas) na pasta home do usuário,
-        representadas como objetos ModeloDePasta.
+    def __repr__(self) -> str:
+        return f"<OSModel os='{self.sys_data_os_name}' username='{self.sys_data_user_name}' ip='{self.sys_data_ip_address}' disk_free_space='{self.sys_data_disk_free_space}'>"
 
-        Returns:
-            list[ModeloDePasta]: Lista de pastas.
-        """
-        try:
-            return [
-                ModeloDePasta(folder_path=p)
-                for p in self.pasta_usuario.iterdir()
-                if p.is_dir() and not is_hidden_path(path_neutral=p)
-            ]
-        except PermissionError:
-            return []
+    # --------------------------
+    # Informações do sistema
+    # --------------------------
 
-    def listar_pastas_vazias_home(self) -> list[Path]:
-        """
-        Retorna todas as pastas vazias dentro da pasta home, recursivamente.
-
-        Returns:
-            list[Path]: Pastas vazias.
-        """
-        try:
-            return list_empty_folders(base_folder=self.pasta_usuario)
-        except PermissionError:
-            return []
-
-    def listar_maiores_arquivos_home(self, qnte_lim_files: int = 5):
-        """
-        Retorna os maiores arquivos da pasta home, limitados pela quantidade passada.
-
-        Args:
-            qnte_lim_files (int): Quantidade limite de arquivos a retornar.
-
-        Returns:
-            list[Path]: Lista dos maiores arquivos.
-        """
-        try:
-            arquivos: list[ModeloDeArquivo] = [
-                ModeloDeArquivo(file_path=p)
-                for p in self.pasta_usuario.iterdir()
-                if p.is_file() and not is_hidden_path(path_neutral=p)
-            ]
-            return sorted(arquivos, key=lambda p: p.file_path.stat().st_size, reverse=True)[:qnte_lim_files]
-        except PermissionError:
-            return []
-
-    def buscar_por_extensao_home(self, extensao: str) -> list[Path]:
-        """
-        Busca arquivos na pasta home que tenham a extensão especificada (case-insensitive).
-
-        Args:
-            extensao (str): Extensão do arquivo (ex: '.txt').
-
-        Returns:
-            list[Path]: Lista de arquivos encontrados.
-        """
-        try:
-            return search_by_extension(base_folder=self.pasta_usuario, extension=extensao)
-        except PermissionError:
-            return []
-
-    def informacoes(self) -> dict[str, str | list[str]]:
-        """
-        Retorna informações básicas do sistema operacional, usuário e arquivos/pastas públicos.
-
-        Returns:
-            Dict[str, Union[str, list[str]]]: Dicionário com as informações.
-        """
+    def so_method_obter_info_so(self) -> dict[str, str | int]:
+        """Retorna informações detalhadas do sistema."""
         return {
-            "nome_so": self.nome_so,
-            "versao": self.versao,
-            "usuario_logado": self.usuario_logado,
-            "pasta_usuario": str(self.pasta_usuario),
-            "arquitetura": self.arquitetura,
-            "arquivos_publicos": [str(arquivo.file_path) for arquivo in self.arquivos_publicos],
-            "pastas_publicas": [str(pasta.folder_path) for pasta in self.pastas_publicas],
+            "os_name": self.sys_data_os_name,
+            "hostname": self.sys_data_hostname,
+            "username": self.sys_data_user_name,
+            "user_home": str(self.sys_data_user_home),
+            "ip_address": self.sys_data_ip_address,
+            "kernel_version": self.sys_data_kernel_version,
+            "platform_info": self.sys_data_platform_info,
+            "disk_free_space": self.sys_data_disk_free_space,
+            # "disk_free_space_formatado": global_method_formatar_tamanho_caminho(
+                # tamanho_bytes=self.sys_data_disk_free_space
+            # ),
         }

@@ -3,7 +3,7 @@ Módulo utilitário de acesso unificado às funções de manipulação
 de arquivos, pastas e sistema operacional.
 
 Este módulo agrega funções importadas de outros submódulos
-(`file_tools`, `folder_tools`, `main_tools` e `system_tools`)
+(`file_tools`, `folder_tools`, `global_tools` e `system_tools`)
 em um único ponto de acesso, facilitando a importação e a
 organização do código.
 
@@ -15,56 +15,64 @@ Funcionalidades abrangem:
 - Detecção e informações sobre o sistema operacional
 """
 
-from utils.file_tools import read_text_content, write_text_content
-from utils.folder_tools import (
-    calculate_depth,
-    filter_for_files,
-    filter_for_folders,
-    list_all_non_empty_children,
-    list_empty_folders,
-    search_by_extension,
-)
-from utils.main_tools import (
-    get_dates_path,
-    get_id_path,
-    get_name_path,
-    get_permissions_path,
-    get_size_path,
-    is_hidden_path,
-    validate_path,
-)
+# from utils.global_tools import (
+#     file_method_buscar_arquivos_por_extensoes,
+#     file_method_buscar_arquivos_por_tamanho,
+#     file_method_buscar_por_extensoes,
+#     file_method_escrever_conteudo_texto,
+#     file_method_formatar_data,
+#     file_method_gerar_slug,
+#     file_method_ler_conteudo_texto,
+#     folder_method_calcular_profundidade,
+#     folder_method_contar_filhos,
+#     folder_method_buscar_apenas_arquivos,
+#     folder_method_buscar_apenas_pastas,
+#     global_method_buscar_filhos,
+#     folder_method_buscar_pastas_visiveis,
+#     folder_method_resumir_pasta,
+#     folder_method_visualizacao_arvore,
+#     global_method_debug_print,
+#     global_method_formatar_tamanho_caminho,
+#     global_method_obter_datas_caminho,
+#     global_method_obter_id_caminho,
+#     global_method_obter_nome_caminho,
+#     global_method_obter_permissoes_caminho,
+#     global_method_obter_tamanho_caminho,
+#     global_method_check_valid_path,
+#     system_method_obter_caminho_usuario,
+#     system_method_obter_endereco_ip,
+#     system_method_obter_espaco_disco_livre,
+#     system_method_obter_nome_sistema_operacional,
+# )
 
-from .system_tools import (
-    detect_filesystem,
-    detect_system,
-    get_user_root_folder,
-    system_path_regex,
-    validate_os_path,
-)
-
-__all__: list[str] = [
-    "list_all_non_empty_children",
-    "filter_for_folders",
-    "filter_for_files",
-    "list_empty_folders",
-    "calculate_depth",
-    "search_by_extension",
-    "detect_system",
-    "detect_filesystem",
-    "get_user_root_folder",
-    "get_dates_path",
-    "get_id_path",
-    "get_name_path",
-    "get_permissions_path",
-    "get_size_path",
-    "system_path_regex",
-    "validate_os_path",
-    "read_text_content",
-    "validate_path",
-    "write_text_content",
-    "is_hidden_path",
-    "list_all_non_empty_children",
-    "filter_for_files",
-    "list_all_non_empty_children",
-    "list_all_non_empty_children",
-]
+# __all__: list[str] = [
+#     "file_method_buscar_arquivos_por_extensoes",
+#     "file_method_buscar_por_extensoes",
+#     "file_method_escrever_conteudo_texto",
+#     "file_method_buscar_arquivos_por_tamanho",
+#     "file_method_formatar_data",
+#     "file_method_gerar_slug",
+#     "file_method_ler_conteudo_texto",
+#     "folder_method_calcular_profundidade",
+#     "folder_method_contar_filhos",
+#     "folder_method_buscar_apenas_arquivos",
+#     "folder_method_buscar_apenas_pastas",
+#     "folder_method_buscar_pastas_visiveis",
+#     "global_method_buscar_filhos",
+#     "folder_method_resumir_pasta",
+#     "folder_method_visualizacao_arvore",
+#     "global_method_formatar_tamanho_caminho",
+#     "global_method_debug_print",
+#     "global_method_obter_datas_caminho",
+#     "global_method_obter_id_caminho",
+#     "global_method_obter_nome_caminho",
+#     "global_method_obter_permissoes_caminho",
+#     "global_method_obter_tamanho_caminho",
+#     "global_method_check_valid_path",
+#     "system_method_obter_caminho_usuario",
+#     "system_method_obter_endereco_ip",
+#     "system_method_obter_espaco_disco_livre",
+#     "system_method_obter_nome_sistema_operacional",
+#     "global_method_buscar_filhos",
+#     "global_method_formatar_tamanho_caminho",
+# ]

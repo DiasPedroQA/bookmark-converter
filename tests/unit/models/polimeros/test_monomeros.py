@@ -1,4 +1,3 @@
-# import hashlib
 # import os
 # import platform
 # import re
@@ -6,16 +5,6 @@
 # import pytest
 # from pydantic import ValidationError
 
-
-# def gerar_id_formatado(texto: str) -> str:
-#     """
-#     Gera um ID hash SHA-256 a partir de uma string,
-#     limitado a 30 caracteres hexadecimais, no formato:
-#     xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx
-#     """
-#     digest: str = hashlib.sha256(texto.encode()).hexdigest()[:30]
-#     blocos: list[str] = [digest[i : i + 6] for i in range(0, 30, 6)]
-#     return "-".join(blocos)
 
 
 # def validar_id_gerado(texto: str) -> IdentificadorValido | ErroIdentificadorInvalido:

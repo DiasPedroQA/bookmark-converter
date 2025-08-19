@@ -1,165 +1,129 @@
+# FileModel Reformulado com global_tools.py
+
 """
-Modelo para representar e manipular arquivos no sistema operacional.
+Modelo para representar arquivos usando funções auxiliares do global_tools.
 
-Fornece propriedades e métodos para acessar informações detalhadas sobre
-nome, caminho, extensão, tamanho, datas, permissões e conteúdo.
-Ideal para uso em controllers ou serviços que precisem
-de dados completos sobre um arquivo.
+Fornece uma interface limpa para dados de arquivos, delegando todas as operações
+para as funções do global_tools.py mantendo a separação de responsabilidades.
 """
 
-from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
+# from datetime import datetime
+# from pathlib import Path
 
-from utils.file_tools import read_text_content, write_text_content
-from utils.main_tools import (
-    get_dates_path,
-    get_id_path,
-    get_name_path,
-    get_permissions_path,
-    get_size_path,
-    is_hidden_path,
-    validate_path,
-)
+# from utils.global_tools import (
+#     global_method_obter_id_caminho,
+#     global_method_check_valid_path,
+#     global_method_formatar_tamanho_caminho,
+#     global_method_obter_datas_caminho,
+#     global_method_obter_nome_caminho,
+#     global_method_obter_permissoes_caminho,
+#     global_method_obter_tamanho_caminho,
+# )
 
+# class FileModel:
+#     """Modelo para representação e manipulação de arquivos do sistema.
 
-@dataclass(frozen=True, slots=True)
-class ModeloDeArquivo:
-    """
-    Representa um arquivo no sistema de arquivos.
+#     Atributos:
+#         id (str): Identificador único baseado no caminho do arquivo
+#         name (str): Nome do arquivo com extensão
+#         caminho_do_arquivo (Path): Caminho completo do arquivo (acessível via str(self.file_data_caminho_validado))
+#         extension (str): Extensões do arquivo (incluindo múltiplas extensões)
+#         size_bytes (int): Tamanho em bytes
+#         size_formatado (str): Tamanho formatado (ex: "1.23 MB")
+#         is_visibel (bool): Se o arquivo não está marcado como oculto
+#         dates (dict): Datas de criação, modificação e acesso como datetime
+#         permissions (dict): Permissões de leitura, escrita e execução
 
-    Atributos:
-        file_path (Path): Caminho absoluto do arquivo. Validado na inicialização.
-    """
+#     Métodos principais:
+#         read_content(): Lê todo o conteúdo do arquivo como texto
+#         write_content(): Escreve conteúdo no arquivo
+#         to_dict(): Serializa os dados para um dicionário
+#     """
 
-    file_path: Path
+#     def __init__(self, caminho_do_arquivo: str | Path) -> None:
+#         """
+#         Inicializa o modelo com os dados do arquivo.
+#         Todas as propriedades são obtidas através das funções do global_tools.
 
-    def __post_init__(self) -> None:
-        """
-        Valida se o caminho existe e aponta para um arquivo real.
+#         Args:
+#             caminho_do_arquivo: Caminho para o arquivo (str ou Path)
 
-        Levanta:
-            FileNotFoundError: Se o caminho não existir ou não for um arquivo.
-        """
-        caminho_validado: Path = validate_path(path_neutral=self.file_path)
-        if not Path(caminho_validado).is_file():
-            raise FileNotFoundError(f"Arquivo não encontrado: {self.file_path}")
+#         Raises:
+#             ValueError: Se o caminho não for um arquivo válido
+#             FileNotFoundError: Se o arquivo não existir
+#         """
+#         self.file_data_caminho_validado: Path = global_method_check_valid_path(caminho_generico=caminho_do_arquivo)
+#         self._validate()
+#         if not self.file_data_caminho_validado.is_file():
+#             raise ValueError(f"Path is not a valid file: {self.file_data_caminho_validado}")
 
-    @property
-    def file_name(self) -> str:
-        """
-        Retorna o nome do arquivo sem o caminho.
+#         # Metadados básicos
+#         self.file_data_id: str = global_method_obter_id_caminho(caminho_generico=self.file_data_caminho_validado)
+#         self.file_data_name: str = global_method_obter_nome_caminho(caminho_generico=self.file_data_caminho_validado)
+#         self.file_data_extension: str = "".join(self.file_data_caminho_validado.suffixes)
+#         self.file_data_size_bytes: int = global_method_obter_tamanho_caminho(
+#             caminho_generico=self.file_data_caminho_validado
+#         )
+#         self.file_data_size_formatado: str = global_method_formatar_tamanho_caminho(
+#             tamanho_bytes=self.file_data_size_bytes
+#         )
+#         self.file_data_is_visibel: bool = global_method_item_e_visivel(caminho_generico=self.file_data_caminho_validado)
 
-        Returns:
-            str: Nome do arquivo.
-        """
-        return get_name_path(path_neutral=self.file_path)
+#         # Metadados obtidos das funções auxiliares
+#         self.file_data_dates: dict[str, datetime] = global_method_obter_datas_caminho(
+#             caminho_generico=self.file_data_caminho_validado
+#         )
+#         self.file_data_permissions: dict[str, bool] = global_method_obter_permissoes_caminho(
+#             caminho_generico=self.file_data_caminho_validado
+#         )
 
-    @property
-    def file_id(self) -> str:
-        """
-        Retorna um identificador único baseado no caminho.
+#     def _validate(self) -> None:
+#         """Valida se o caminho é um arquivo válido"""
+#         if not self.file_data_caminho_validado.is_file():
+#             raise ValueError(f"Path is not a file: {self.file_data_caminho_validado}")
 
-        Returns:
-            str: ID único do arquivo.
-        """
-        return get_id_path(path_neutral=self.file_path)
+#     def _refresh_metadata(self) -> None:
+#         """
+#         Atualiza todas as propriedades que podem mudar após modificações
+#         no arquivo, usando as funções do global_tools.
+#         """
+#         self.file_data_size_bytes = global_method_obter_tamanho_caminho(
+#             caminho_generico=self.file_data_caminho_validado
+#         )
+#         self.file_data_size_formatado = global_method_formatar_tamanho_caminho(tamanho_bytes=self.file_data_size_bytes)
+#         self.file_data_dates = global_method_obter_datas_caminho(caminho_generico=self.file_data_caminho_validado)
+#         self.file_data_permissions = global_method_obter_permissoes_caminho(
+#             caminho_generico=self.file_data_caminho_validado
+#         )
 
-    @property
-    def file_extension(self) -> str | list[str]:
-        """
-        Retorna a extensão do arquivo.
+#     def file_method_read_content(self, encoding: str = "utf-8") -> str:
+#         """Lê o conteúdo do arquivo usando file_method_ler_conteudo_texto do global_tools"""
+#         return file_method_ler_conteudo_texto(caminho_arquivo=self.file_data_caminho_validado, codificacao=encoding)
 
-        Returns:
-            str | list[str]: Extensão única (ex: ".txt") ou lista de extensões
-            para arquivos com múltiplos sufixos (ex: ".tar.gz").
-        """
-        sufixos: list[str] = self.file_path.suffixes
-        return sufixos[-1] if len(sufixos) == 1 else sufixos
+#     def file_method_write_content(self, content: str, encoding: str = "utf-8") -> None:
+#         """
+#         Escreve no arquivo usando file_method_escrever_conteudo_texto do global_tools
+#         e atualiza os metadados automaticamente.
+#         """
+#         file_method_escrever_conteudo_texto(
+#             caminho_arquivo=self.file_data_caminho_validado, conteudo=content, codificacao=encoding
+#         )
+#         self._refresh_metadata()
 
-    @property
-    def file_size_formatted(self) -> str:
-        """
-        Retorna o tamanho do arquivo em formato legível.
+#     def file_method_to_dict(self) -> dict[str, str | int | bool | dict[str, str] | dict[str, bool]]:
+#         """Serializa os dados do arquivo para um dicionário"""
+#         return {
+#             "id": self.file_data_id,
+#             "name": self.file_data_name,
+#             "caminho_do_arquivo": str(self.file_data_caminho_validado),
+#             "extension": self.file_data_extension,
+#             "size_bytes": self.file_data_size_bytes,
+#             "size_formatado": self.file_data_size_formatado,
+#             "is_visibel": self.file_data_is_visibel,
+#             "dates": {k: v.isoformat() for k, v in self.file_data_dates.items()},
+#             "permissions": self.file_data_permissions,
+#         }
 
-        Returns:
-            str: Tamanho formatado (ex: "2.34 MB").
-        """
-        size: int | float = get_size_path(path_neutral=self.file_path)
-        for unidade in ["B", "KB", "MB", "GB", "TB"]:
-            if size < 1024:
-                return f"{size:.2f} {unidade}"
-            size /= 1024
-        return f"{size:.2f} PB"
-
-    @property
-    def file_dates(self) -> dict[str, datetime]:
-        """
-        Retorna as datas associadas ao arquivo.
-
-        Returns:
-            dict[str, datetime]: Datas de criação, modificação e último acesso.
-        """
-        return get_dates_path(path_neutral=self.file_path)
-
-    @property
-    def file_permissions(self) -> dict[str, bool]:
-        """
-        Retorna as permissões de leitura, escrita e execução.
-
-        Returns:
-            dict[str, bool]: Dicionário com permissões.
-        """
-        return get_permissions_path(path_neutral=self.file_path)
-
-    @property
-    def file_content(self) -> str:
-        """
-        Lê o conteúdo do arquivo como texto.
-
-        Returns:
-            str: Conteúdo textual do arquivo.
-        """
-        return read_text_content(file_path=self.file_path)
-
-    def file_write_content(self, new_content: str) -> None:
-        """
-        Sobrescreve o conteúdo do arquivo com novo texto.
-
-        Args:
-            new_content (str): Novo conteúdo a ser gravado.
-
-        Raises:
-            PermissionError: Se não houver permissão de escrita.
-            FileNotFoundError: Se o arquivo não existir.
-            OSError: Para outros erros de E/S.
-        """
-        try:
-            write_text_content(file_path=self.file_path, content=new_content)
-        except PermissionError as e:
-            raise PermissionError(f"Permissão negada para escrever no arquivo: {self.file_path}") from e
-        except FileNotFoundError as e:
-            raise FileNotFoundError(f"Arquivo não encontrado: {self.file_path}") from e
-        except OSError as e:
-            raise OSError(f"Erro ao escrever no arquivo {self.file_path}: {e.strerror}") from e
-
-    def file_info(self) -> dict[str, str | Path | list[str] | dict[str, datetime] | dict[str, bool]]:
-        """
-        Retorna um dicionário com todas as informações relevantes do arquivo.
-
-        Ignora arquivos ocultos.
-
-        Returns:
-            dict: Informações completas do arquivo ou vazio se oculto.
-        """
-        if is_hidden_path(path_neutral=self.file_path):
-            return {}
-        return {
-            "file_id": self.file_id,
-            "file_name": self.file_name,
-            "file_path": str(self.file_path),
-            "file_extension": self.file_extension,
-            "file_size_formatted": self.file_size_formatted,
-            "file_dates": self.file_dates,
-            "file_permissions": self.file_permissions,
-        }
+#     def __repr__(self) -> str:
+#         """Representação simples do objeto para debugging"""
+#         return f"FileModel(name='{self.file_data_name}', caminho_do_arquivo='{self.file_data_caminho_validado}', size='{self.file_data_size_formatado}')"
