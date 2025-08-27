@@ -9,7 +9,7 @@ Fornece acesso centralizado às classes principais:
 
 # from .arquivo_model import FileModel
 # from .folder_model import FolderModel
-# from .sistema_operacional_model import OSModel
+# from .os_model import OSModel
 
 # __all__: list[str] = [
 #     "FolderModel",

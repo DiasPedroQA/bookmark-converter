@@ -1,16 +1,18 @@
-# FileModel Reformulado com global_tools.py
+# # FileModel Reformulado com global_tools.py
 
-"""
-Modelo para representar arquivos usando funções auxiliares do global_tools.
+# """
+# Modelo para representar arquivos usando funções auxiliares do global_tools.
 
-Fornece uma interface limpa para dados de arquivos, delegando todas as operações
-para as funções do global_tools.py mantendo a separação de responsabilidades.
-"""
+# Fornece uma interface limpa para dados de arquivos, delegando todas as operações
+# para as funções do global_tools.py mantendo a separação de responsabilidades.
+# """
 
 # from datetime import datetime
 # from pathlib import Path
 
-# from utils.global_tools import (
+# from utils import (
+#     file_method_escrever_conteudo_texto,
+#     file_method_ler_conteudo_texto,
 #     global_method_obter_id_caminho,
 #     global_method_check_valid_path,
 #     global_method_formatar_tamanho_caminho,
@@ -19,6 +21,7 @@ para as funções do global_tools.py mantendo a separação de responsabilidades
 #     global_method_obter_permissoes_caminho,
 #     global_method_obter_tamanho_caminho,
 # )
+
 
 # class FileModel:
 #     """Modelo para representação e manipulação de arquivos do sistema.
@@ -67,7 +70,7 @@ para as funções do global_tools.py mantendo a separação de responsabilidades
 #         self.file_data_size_formatado: str = global_method_formatar_tamanho_caminho(
 #             tamanho_bytes=self.file_data_size_bytes
 #         )
-#         self.file_data_is_visibel: bool = global_method_item_e_visivel(caminho_generico=self.file_data_caminho_validado)
+#         # self.file_data_is_visibel: bool = global_method_item_e_visivel(caminho_generico=self.file_data_caminho_validado)
 
 #         # Metadados obtidos das funções auxiliares
 #         self.file_data_dates: dict[str, datetime] = global_method_obter_datas_caminho(
@@ -119,7 +122,7 @@ para as funções do global_tools.py mantendo a separação de responsabilidades
 #             "extension": self.file_data_extension,
 #             "size_bytes": self.file_data_size_bytes,
 #             "size_formatado": self.file_data_size_formatado,
-#             "is_visibel": self.file_data_is_visibel,
+#             # "is_visibel": self.file_data_is_visibel,
 #             "dates": {k: v.isoformat() for k, v in self.file_data_dates.items()},
 #             "permissions": self.file_data_permissions,
 #         }

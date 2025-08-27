@@ -1,76 +1,149 @@
-"""
-os_controller.py
-----------------
+# """
+# file_explorer_controller.py
+# ---------------------------
 
-Controller responsável por gerir a OSModel e expor as informações do sistema de forma organizada.
-"""
+# Controller avançada para exploração hierárquica de arquivos e pastas,
+# herdando dados do sistema operacional via OSModel.
 
-from models.sistema_operacional_model import OSModel
+# Funcionalidades:
+# - Exploração recursiva de arquivos e pastas.
+# - Filtragem por extensão, tamanho e palavra-chave no nome.
+# - Ignora arquivos/pastas ocultos.
+# - Enriquecimento de informações de cada arquivo/pasta usando global_tools.
+# - Exibição de informações do sistema (OSModel) diretamente pela controller.
+# """
 
-# Tipos auxiliares
-FileDict = dict[str, str | int | bool | dict[str, str] | dict[str, bool]]
-FolderDict = dict[str, str | bool | int | dict[str, str] | dict[str, bool] | list["FolderDict"] | None]
-SearchesDict = dict[str, list[FileDict] | dict[str, str | int]]
+# from __future__ import annotations
+
+# import logging
+# from pathlib import Path
+# from typing import TypedDict
+
+# from models.os_model import OSModel
+# from utils.global_tools import (
+#     FileInfo,
+#     RawFileInfo,
+#     SystemInfo,
+#     global_method_formatar_infos_caminho,
+#     global_method_infos_caminho,
+# )
+# from utils.system_tools import (
+#     folder_method_buscar_apenas_pastas,
+#     folder_method_buscar_arquivos_por_extensoes,
+# )
+
+# logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
-class OSController:
-    """Controller para orquestrar operações da OSModel."""
+# class ExploreNode(TypedDict):
+#     """Nó da árvore de exploração de diretórios."""
 
-    def __init__(self) -> None:
-        self.model = OSModel()
+#     current: str
+#     files: list[FileInfo]
+#     folders: list["ExploreNode"]
 
-    # --------------------------
-    # Exibição / Agregação
-    # --------------------------
 
-    def show_system_overview(self) -> dict[str, str | int]:
-        """Retorna visão geral do sistema operacional."""
-        info: dict[str, str | int] = self.model.so_method_obter_info_so()
-        print("\n=== INFORMAÇÕES DO SISTEMA ===")
-        for k, v in info.items():
-            print(f"{k}: {v}")
-        return info
+# class FileExplorerController(OSModel):
+#     """Controller que explora arquivos/pastas de forma hierárquica e filtrada.
 
-    # def explore_user_home(self, recursive: bool = False) -> FolderDict:
-    #     """Explora a pasta raiz do usuário logado."""
-    #     print(f"\n=== EXPLORANDO HOME: {self.model.user_home} ===")
-    #     return self.model.folder_info(path=self.model.user_home, recursive=recursive)
+#     Herda de OSModel, fornecendo informações do sistema operacional, IP, home do usuário e disco.
+#     """
 
-    # def list_root_folders(self) -> list[FolderDict]:
-    #     """Lista pastas da raiz do sistema (ex: / ou C:\\)."""
-    #     print("\n=== PASTAS NA RAIZ DO SISTEMA ===")
-    #     root = Path("/")
-    #     folders: list[FolderDict] = []
-    #     for item in root.iterdir():
-    #         if item.is_dir():
-    #             folders.append(self.model.folder_info(path=item, recursive=False))
-    #     return folders
+#     def __init__(self, root: str | Path | None = None) -> None:
+#         """Inicializa a controller com base no caminho root ou no home do usuário."""
+#         if root is None:
+#             root = Path.home()
+#         super().__init__(root=root)
 
-    # def search_examples(self) -> SearchesDict:
-    #     """Exemplo de buscas e filtros para debug/demonstração."""
-    #     base: Path = self.model.user_home
-    #     print(f"\n=== BUSCAS NA PASTA: {base} ===")
-    #     return {
-    #         "arquivos_txt": self.model.search_files(base_path=base, extensions=[".txt"]),
-    #         "arquivos_pequenos": self.model.filter_files_by_size(base_path=base),
-    #         "resumo_home": self.model.summarize_directory(path=base),
-    #     }
+#     def show_system_info(self) -> SystemInfo:
+#         """Retorna todas as informações do sistema disponíveis no OSModel."""
+#         return self.to_dict()
 
-    # --------------------------
-    # Fluxo completo
-    # --------------------------
+#     def enrich_file_info(self, file_path: str | Path) -> FileInfo:
+#         """Enriquece um arquivo/pasta com informações detalhadas formatadas."""
+#         infos: RawFileInfo = global_method_infos_caminho(caminho_generico=file_path)
+#         return global_method_formatar_infos_caminho(infos=infos)
 
-    def run(self) -> dict[str, dict[str, str | int] | FolderDict | list[FolderDict] | SearchesDict]:
-        """Executa fluxo padrão: overview + home + raiz + exemplos."""
-        print("\n========== INICIANDO CONTROLLER ==========")
-        overview: dict[str, str | int] = self.show_system_overview()
-        # home_data: FolderDict = self.explore_user_home(recursive=False)
-        # root_data: list[FolderDict] = self.list_root_folders()
-        # searches: SearchesDict = self.search_examples()
+#     def explore(
+#         self,
+#         path: str | Path | None = None,
+#         ext: str | None = None,
+#         max_depth: int | None = None,
+#         current_depth: int = 0,
+#         tamanho_min: int = 0,
+#         tamanho_max: int | None = None,
+#         keyword: str | None = None,
+#     ) -> ExploreNode:
+#         """
+#         Explora arquivos e pastas de forma hierárquica a partir de path (ou self.home por default).
 
-        return {
-            "overview": overview,
-            # "home": home_data,
-            # "root": root_data,
-            # "searches": searches,
-        }
+#         Args:
+#             path: Caminho inicial de exploração (default = self.home).
+#             ext: Extensão dos arquivos a buscar (ex: "py"). None = sem filtro.
+#             max_depth: Profundidade máxima da recursão. None = ilimitado.
+#             current_depth: Profundidade atual (interno).
+#             tamanho_min: Tamanho mínimo do arquivo em bytes.
+#             tamanho_max: Tamanho máximo do arquivo em bytes.
+#             keyword: Palavra-chave que deve estar no nome do arquivo/pasta.
+
+#         Returns:
+#             ExploreNode: Estrutura hierárquica com arquivos e subpastas.
+#         """
+#         p: Path = self.home if path is None else Path(path)
+#         node: ExploreNode = {"current": str(p), "files": [], "folders": []}
+
+#         # Condição de parada
+#         if not p.exists() or not p.is_dir():
+#             return node
+#         if max_depth is not None and current_depth > max_depth:
+#             return node
+
+#         try:
+#             # Se filtro de extensão foi passado -> busca customizada
+#             arquivos: list[Path]
+#             if ext:
+#                 ext = f".{ext.lstrip('.').lower()}"
+#                 arquivos = folder_method_buscar_arquivos_por_extensoes(pasta_base=p, extensoes=[ext])
+#             else:
+#                 arquivos = [f for f in p.iterdir() if f.is_file()]
+
+#             # Aplicar filtros adicionais
+#             arquivos_filtrados: list[Path] = []
+#             for f in arquivos:
+#                 try:
+#                     tamanho: int = f.stat().st_size
+#                 except OSError:
+#                     continue
+
+#                 if tamanho < tamanho_min or (tamanho_max and tamanho > tamanho_max):
+#                     continue
+#                 if keyword and keyword.lower() not in f.name.lower():
+#                     continue
+#                 arquivos_filtrados.append(f)
+
+#             # Enriquecer arquivos
+#             for f in arquivos_filtrados:
+#                 node["files"].append(self.enrich_file_info(file_path=f))
+
+#             # Recursão em subpastas
+#             pastas: list[Path] = folder_method_buscar_apenas_pastas(itens=list(p.iterdir()))
+#             for sub in pastas:
+#                 if sub.name.startswith("."):
+#                     continue
+#                 sub_node: ExploreNode = self.explore(
+#                     path=sub,
+#                     ext=ext,
+#                     max_depth=max_depth,
+#                     current_depth=current_depth + 1,
+#                     tamanho_min=tamanho_min,
+#                     tamanho_max=tamanho_max,
+#                     keyword=keyword,
+#                 )
+#                 node["folders"].append(sub_node)
+
+#         except PermissionError as e:
+#             logging.warning(msg=f"Sem permissão: {e}")
+#         except FileNotFoundError as e:
+#             logging.warning(msg=f"Pasta não encontrada: {e}")
+
+#         return node
