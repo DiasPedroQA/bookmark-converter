@@ -5,6 +5,7 @@ httpx
 coverage
 beautifulsoup4
 pydantic
+pytest
 uvicorn
 psutil
 

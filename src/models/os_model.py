@@ -1,112 +1,98 @@
-# """
-# os_model.py
-# -----------
+"""
+os_model.py
+-----------
+Modelo avançado para informações do sistema operacional.
+"""
 
-# Advanced OS model for system and disk information.
-# """
+from __future__ import annotations
 
-# from __future__ import annotations
-
-# import getpass
-# import logging
-# import os
-# import platform
-# import socket
-# from pathlib import Path
-# from typing import Any
-
-# from utils import global_method_formatar_tamanho_caminho
-
-# logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+import getpass
+import logging
+import os
+import platform
+import socket
+from pathlib import Path
+from typing import Any
 
 
-# class OSModel:
-#     """Model that abstracts system information and disk resources."""
+class OSModel:
+    """Modelo avançado para informações do sistema operacional e disco."""
 
-#     def __init__(self, root: str | Path = "/") -> None:
-#         """
-#         Initialize OS information and main resources.
+    def __init__(self, root: str | Path = "/") -> None:
+        self.root: Path = Path(root).resolve()
+        self.os_name: str = platform.system()
+        self.hostname: str = socket.gethostname()
+        self.username: str = getpass.getuser()
+        self.home: Path = Path.home().expanduser()
+        self.kernel_version: str = platform.version()
+        self.platform: str = platform.platform()
 
-#         Args:
-#             root: Base path to check disk usage (default is '/').
-#         """
-#         self.root: Path = Path(root).resolve()
-#         self.os_name: str = platform.system()
-#         self.hostname: str = socket.gethostname()
-#         self.username: str = getpass.getuser()
-#         self.home: Path = Path.home().expanduser()
-#         self.kernel_version: str = platform.version()
-#         self.platform: str = platform.platform()
-#         self.ip: str | None = self._get_ip()
-#         self.disk_free: int | None = self._get_disk_free(self.root)
+        # Propriedades dinâmicas
+        self.ip: str | None = None
+        self.disk_free: int | None = None
+        self.refresh()
 
-#     # ============================================================
-#     # [PRIVATE HELPERS]
-#     # ============================================================
+    # ============================================================
+    # [PRIVATE HELPERS]
+    # ============================================================
 
-#     def _get_ip(self) -> str | None:
-#         """Get local IP address in a robust way (ignores only-loopback)."""
-#         try:
-#             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-#                 s.connect(("8.8.8.8", 80))
-#                 return s.getsockname()[0]
-#         except OSError as e:
-#             logging.warning("Failed to get IP: %s", e)
-#             return None
+    def _get_ip(self) -> str | None:
+        """Obtém o IP local de forma robusta (ignora loopback)."""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect(("8.8.8.8", 80))
+                return s.getsockname()[0]
+        except OSError as e:
+            logging.warning("Falha ao obter IP: %s", e)
+            return None
 
-#     def _get_disk_free(self, path: str | Path) -> int | None:
-#         """Return free disk space in bytes for the given path."""
-#         try:
-#             path = Path(path)
-#             st: os.statvfs_result = os.statvfs(str(path))
-#             return st.f_bavail * st.f_frsize
-#         except OSError as e:
-#             logging.warning("Failed to get disk free space for %s: %s", path, e)
-#             return None
+    def _get_disk_free(self, path: Path) -> int | None:
+        """Retorna espaço livre em disco (bytes) para o path dado."""
+        try:
+            st: os.statvfs_result = os.statvfs(str(path))
+            return st.f_bavail * st.f_frsize
+        except OSError as e:
+            logging.warning("Falha ao obter espaço livre de %s: %s", path, e)
+            return None
 
-#     # ============================================================
-#     # [PUBLIC METHODS]
-#     # ============================================================
+    # ============================================================
+    # [PUBLIC METHODS]
+    # ============================================================
 
-#     def to_dict(self) -> dict[str, str | int | None]:
-#         """Return system info as dictionary with human-friendly disk size."""
-#         return {
-#             "os_name": self.os_name,
-#             "hostname": self.hostname,
-#             "username": self.username,
-#             "home": str(self.home),
-#             "ip": self.ip,
-#             "kernel_version": self.kernel_version,
-#             "platform": self.platform,
-#             "disk_free": (
-#                 global_method_formatar_tamanho_caminho(tamanho_bytes=self.disk_free)
-#                 if self.disk_free is not None
-#                 else None
-#             ),
-#         }
+    def refresh(self) -> None:
+        """Atualiza propriedades dinâmicas (IP e espaço em disco)."""
+        self.ip = self._get_ip()
+        self.disk_free = self._get_disk_free(self.root)
 
-#     def refresh(self) -> None:
-#         """
-#         Refresh dynamic properties (IP, disk space).
-#         Useful for long-running processes where values may change.
-#         """
-#         self.ip = self._get_ip()
-#         self.disk_free = self._get_disk_free(path=self.root)
+    def to_dict(self) -> dict[str, str | int | None]:
+        """Retorna informações do sistema como dicionário."""
+        return {
+            "os_name": self.os_name,
+            "hostname": self.hostname,
+            "username": self.username,
+            "home": str(self.home),
+            "ip": self.ip,
+            "kernel_version": self.kernel_version,
+            "platform": self.platform,
+            "disk_free": self.disk_free,
+        }
 
-#     # ============================================================
-#     # [DUNDERS]
-#     # ============================================================
+    # ============================================================
+    # [DUNDERS]
+    # ============================================================
 
-#     def __repr__(self) -> str:
-#         return (
-#             f"<OSModel os='{self.os_name}' "
-#             f"user='{self.username}' "
-#             f"ip='{self.ip or '-'}' "
-#             f"disk_free={self.disk_free or 0:,} bytes>"
-#         )
+    def __repr__(self) -> str:
+        return (
+            f"<OSModel os='{self.os_name}' "
+            f"user='{self.username}' "
+            f"hostname='{self.hostname}' "
+            f"home='{self.home}' "
+            f"ip='{self.ip or '-'}' "
+            f"kernel='{self.kernel_version}' "
+            f"platform='{self.platform}' "
+            f"disk_free='{(self.disk_free or 0):,} bytes'>"
+        )
 
-#     def __eq__(self, other: Any) -> bool:
-#         """Equality based on hostname and username (basic identity)."""
-#         if not isinstance(other, OSModel):
-#             return False
-#         return self.hostname == other.hostname and self.username == other.username
+    def __eq__(self, other: Any) -> bool:
+        """Igualdade baseada em hostname e usuário."""
+        return isinstance(other, OSModel) and self.hostname == other.hostname and self.username == other.username

@@ -1,6 +1,11 @@
 # 📚 Bookmark Converter
 
-Ferramenta modular para converter bookmarks entre HTML e JSON, com suporte a CLI, API REST (FastAPI) e futura GUI.  
+[![codecov](https://codecov.io/gh/USUARIO/REPO/branch/main/graph/badge.svg)](https://codecov.io/gh/USUARIO/REPO)
+
+Projeto abstraído apenas para testes de pipeline com actions
+
+
+Ferramenta modular para converter bookmarks entre HTML e JSON, com suporte a CLI, API REST (FastAPI) e futura GUI.
 Focada em TDD, CI/CD e ambientes profissionais.
 
 [![Coverage](https://codecov.io/gh/DiasPedroQA/bookmark-converter/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/DiasPedroQA/bookmark-converter)

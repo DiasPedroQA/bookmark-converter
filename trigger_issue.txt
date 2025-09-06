@@ -1,0 +1,10 @@
+### Falha detectada na pipeline 🚨
+
+Os testes automatizados falharam na execução do workflow.
+
+- **Repositório**: ${{ github.repository }}
+- **Branch**: ${{ github.ref_name }}
+- **Commit**: ${{ github.sha }}
+- **Rodada**: [Ver execução do workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+⚠️ Verifique o log da execução acima para mais detalhes.

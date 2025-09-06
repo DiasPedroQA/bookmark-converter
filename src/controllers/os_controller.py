@@ -1,149 +1,174 @@
-# """
-# file_explorer_controller.py
-# ---------------------------
+"""
+file_explorer_controller.py
+---------------------------
 
-# Controller avançada para exploração hierárquica de arquivos e pastas,
-# herdando dados do sistema operacional via OSModel.
+Controller avançada para exploração hierárquica de arquivos e pastas,
+herdando dados do sistema operacional via OSModel.
 
-# Funcionalidades:
-# - Exploração recursiva de arquivos e pastas.
-# - Filtragem por extensão, tamanho e palavra-chave no nome.
-# - Ignora arquivos/pastas ocultos.
-# - Enriquecimento de informações de cada arquivo/pasta usando global_tools.
-# - Exibição de informações do sistema (OSModel) diretamente pela controller.
-# """
+Funcionalidades:
+- Exploração recursiva (BFS) de arquivos e pastas.
+- Filtragem por extensão, tamanho e palavra-chave no nome.
+- Ignora arquivos/pastas ocultos.
+- Suporte opcional a symlinks.
+"""
 
-# from __future__ import annotations
+from __future__ import annotations
 
-# import logging
-# from pathlib import Path
-# from typing import TypedDict
-
-# from models.os_model import OSModel
-# from utils.global_tools import (
-#     FileInfo,
-#     RawFileInfo,
-#     SystemInfo,
-#     global_method_formatar_infos_caminho,
-#     global_method_infos_caminho,
-# )
-# from utils.system_tools import (
-#     folder_method_buscar_apenas_pastas,
-#     folder_method_buscar_arquivos_por_extensoes,
-# )
-
-# logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+import logging
+import os
+from collections.abc import Iterable
+from pathlib import Path
 
 
-# class ExploreNode(TypedDict):
-#     """Nó da árvore de exploração de diretórios."""
+class FileExplorerController:
+    """BFS Explorer com validação, filtros e suporte opcional a symlinks."""
 
-#     current: str
-#     files: list[FileInfo]
-#     folders: list["ExploreNode"]
+    def __init__(
+        self,
+        base_path: str | Path,
+        max_depth: int = 5,
+        target_ext: str | None = None,
+        follow_symlinks: bool = False,
+    ) -> None:
+        self.base_path: Path = Path(base_path).expanduser().resolve()
+        self.max_depth: int = max(0, int(max_depth))
+        self.target_ext: str | None = self._normalize_ext(target_ext)
+        self.follow_symlinks: bool = follow_symlinks
 
+        self.files: list[Path] = []
+        self.folders: list[Path] = []
+        self.invalids: list[Path] = []
 
-# class FileExplorerController(OSModel):
-#     """Controller que explora arquivos/pastas de forma hierárquica e filtrada.
+        if not self._is_visible(self.base_path) or not self._has_read_permission(self.base_path):
+            raise ValueError(f"Base path is not accessible or visible: {self.base_path}")
 
-#     Herda de OSModel, fornecendo informações do sistema operacional, IP, home do usuário e disco.
-#     """
+    # -----------------------
+    # Helpers
+    # -----------------------
+    def _normalize_ext(self, ext: str | None) -> str | None:
+        if not ext:
+            return None
+        return f".{ext.strip().lower().lstrip('.')}"
 
-#     def __init__(self, root: str | Path | None = None) -> None:
-#         """Inicializa a controller com base no caminho root ou no home do usuário."""
-#         if root is None:
-#             root = Path.home()
-#         super().__init__(root=root)
+    def _is_visible(self, path: Path) -> bool:
+        try:
+            for part in path.parts:
+                if part in ("/", "\\") or (len(part) == 2 and part.endswith(":")):
+                    continue
+                if part.startswith("."):
+                    return False
+            return True
+        except OSError as e:
+            logging.warning("Visibility check failed for %s: %s", path, e)
+            return False
 
-#     def show_system_info(self) -> SystemInfo:
-#         """Retorna todas as informações do sistema disponíveis no OSModel."""
-#         return self.to_dict()
+    def _has_read_permission(self, path: Path) -> bool:
+        try:
+            return os.access(path, os.R_OK | os.X_OK) if path.is_dir() else os.access(path, os.R_OK)
+        except OSError as e:
+            logging.warning("Permission check failed for %s: %s", path, e)
+            return False
 
-#     def enrich_file_info(self, file_path: str | Path) -> FileInfo:
-#         """Enriquece um arquivo/pasta com informações detalhadas formatadas."""
-#         infos: RawFileInfo = global_method_infos_caminho(caminho_generico=file_path)
-#         return global_method_formatar_infos_caminho(infos=infos)
+    def _validate_path(self, path: Path) -> Path | None:
+        if not self._is_visible(path) or not self._has_read_permission(path):
+            self.invalids.append(path)
+            return None
+        return path
 
-#     def explore(
-#         self,
-#         path: str | Path | None = None,
-#         ext: str | None = None,
-#         max_depth: int | None = None,
-#         current_depth: int = 0,
-#         tamanho_min: int = 0,
-#         tamanho_max: int | None = None,
-#         keyword: str | None = None,
-#     ) -> ExploreNode:
-#         """
-#         Explora arquivos e pastas de forma hierárquica a partir de path (ou self.home por default).
+    # -----------------------
+    # Listing & separating
+    # -----------------------
+    def _list_childs(self, folder: Path) -> list[Path]:
+        childs: list[Path] = []
+        try:
+            for child_path in folder.iterdir():
+                if not self.follow_symlinks and child_path.is_symlink():
+                    continue
+                if valid := self._validate_path(child_path):
+                    childs.append(valid)
+        except (PermissionError, FileNotFoundError, NotADirectoryError, OSError) as e:
+            logging.warning("Cannot access folder %s: %s", folder, e)
+            self.invalids.append(folder)
+        return childs
 
-#         Args:
-#             path: Caminho inicial de exploração (default = self.home).
-#             ext: Extensão dos arquivos a buscar (ex: "py"). None = sem filtro.
-#             max_depth: Profundidade máxima da recursão. None = ilimitado.
-#             current_depth: Profundidade atual (interno).
-#             tamanho_min: Tamanho mínimo do arquivo em bytes.
-#             tamanho_max: Tamanho máximo do arquivo em bytes.
-#             keyword: Palavra-chave que deve estar no nome do arquivo/pasta.
+    def _separate(self, childs: Iterable[Path]) -> tuple[list[Path], list[Path]]:
+        files: list[Path] = []
+        folders: list[Path] = []
+        for child_path in childs:
+            try:
+                if child_path.is_dir():
+                    folders.append(child_path)
+                elif child_path.is_file():
+                    if self.target_ext is None or child_path.suffix.lower() == self.target_ext:
+                        files.append(child_path)
+            except OSError as e:
+                logging.warning("Failed to check child %s: %s", child_path, e)
+                self.invalids.append(child_path)
+        return files, folders
 
-#         Returns:
-#             ExploreNode: Estrutura hierárquica com arquivos e subpastas.
-#         """
-#         p: Path = self.home if path is None else Path(path)
-#         node: ExploreNode = {"current": str(p), "files": [], "folders": []}
+    # -----------------------
+    # BFS exploration
+    # -----------------------
+    def _explore_level(self, current_folders: Iterable[Path], level: int) -> list[Path]:
+        next_level: list[Path] = []
+        current_folders_list: list[Path] = list(current_folders)
+        logging.info("Exploring level %d, %d folders in frontier", level, len(current_folders_list))
 
-#         # Condição de parada
-#         if not p.exists() or not p.is_dir():
-#             return node
-#         if max_depth is not None and current_depth > max_depth:
-#             return node
+        for folder_path in current_folders_list:
+            childs: list[Path] = self._list_childs(folder_path)
+            files, folders = self._separate(childs)
 
-#         try:
-#             # Se filtro de extensão foi passado -> busca customizada
-#             arquivos: list[Path]
-#             if ext:
-#                 ext = f".{ext.lstrip('.').lower()}"
-#                 arquivos = folder_method_buscar_arquivos_por_extensoes(pasta_base=p, extensoes=[ext])
-#             else:
-#                 arquivos = [f for f in p.iterdir() if f.is_file()]
+            self.files.extend([f for f in files if f not in self.files])
+            self.folders.extend([d for d in folders if d not in self.folders])
 
-#             # Aplicar filtros adicionais
-#             arquivos_filtrados: list[Path] = []
-#             for f in arquivos:
-#                 try:
-#                     tamanho: int = f.stat().st_size
-#                 except OSError:
-#                     continue
+            next_level.extend(folders)
+        return next_level
 
-#                 if tamanho < tamanho_min or (tamanho_max and tamanho > tamanho_max):
-#                     continue
-#                 if keyword and keyword.lower() not in f.name.lower():
-#                     continue
-#                 arquivos_filtrados.append(f)
+    # -----------------------
+    # Public API
+    # -----------------------
+    def explore_folder(self) -> dict[str, list[Path]]:
+        """Executa a exploração BFS até max_depth."""
+        if self.base_path not in self.folders:
+            self.folders.append(self.base_path)
 
-#             # Enriquecer arquivos
-#             for f in arquivos_filtrados:
-#                 node["files"].append(self.enrich_file_info(file_path=f))
+        frontier: list[Path] = [self.base_path]
 
-#             # Recursão em subpastas
-#             pastas: list[Path] = folder_method_buscar_apenas_pastas(itens=list(p.iterdir()))
-#             for sub in pastas:
-#                 if sub.name.startswith("."):
-#                     continue
-#                 sub_node: ExploreNode = self.explore(
-#                     path=sub,
-#                     ext=ext,
-#                     max_depth=max_depth,
-#                     current_depth=current_depth + 1,
-#                     tamanho_min=tamanho_min,
-#                     tamanho_max=tamanho_max,
-#                     keyword=keyword,
-#                 )
-#                 node["folders"].append(sub_node)
+        for level in range(self.max_depth + 1):
+            if not frontier:
+                break
+            frontier = self._explore_level(frontier, level)
 
-#         except PermissionError as e:
-#             logging.warning(msg=f"Sem permissão: {e}")
-#         except FileNotFoundError as e:
-#             logging.warning(msg=f"Pasta não encontrada: {e}")
+        logging.info(
+            "Exploration completed: %d folders, %d files, %d invalid paths",
+            len(self.folders),
+            len(self.files),
+            len(self.invalids),
+        )
+        return {"folders": self.folders, "files": self.files, "invalids": self.invalids}
 
-#         return node
+    def filter_by_extension(self, childs: Iterable[Path], extension: str | None = None) -> list[Path]:
+        """Filtra childs por extensão e prefixo (favoritos_ ou bookmarks)."""
+        ext: str | None = self._normalize_ext(extension)
+        prefixes: tuple[str, str] = ("favoritos_", "bookmarks")
+
+        out: list[Path] = []
+        for child_path in childs:
+            try:
+                if child_path.is_file():
+                    filename: str = child_path.name.lower()
+                    if filename.startswith(prefixes) and (ext is None or child_path.suffix.lower() == ext):
+                        out.append(child_path)
+            except OSError:
+                self.invalids.append(child_path)
+        return out
+
+    # -----------------------
+    # Dunders
+    # -----------------------
+    def __repr__(self) -> str:
+        return (
+            f"<FileExplorerController base='{self.base_path}' "
+            f"depth={self.max_depth} ext={self.target_ext or '*'} "
+            f"follow_symlinks={self.follow_symlinks}>"
+        )
