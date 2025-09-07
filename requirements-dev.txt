@@ -130,7 +130,7 @@ pygments==2.19.2
     #   ipython
     #   pytest
     #   rich
-pylint==3.3.7
+pylint==3.3.8
     # via -r requirements-dev.in
 pyproject-hooks==1.2.0
     # via
