@@ -29,7 +29,7 @@ click==8.2.1
     #   -c requirements.txt
     #   black
     #   pip-tools
-coverage[toml]==7.10.3
+coverage[toml]==7.10.6
     # via
     #   -c requirements.txt
     #   pytest-cov
