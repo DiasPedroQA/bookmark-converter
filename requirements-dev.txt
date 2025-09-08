@@ -59,7 +59,9 @@ idna==3.10
     #   -c requirements.txt
     #   requests
 iniconfig==2.1.0
-    # via pytest
+    # via
+    #   -c requirements.txt
+    #   pytest
 ipdb==0.13.13
     # via -r requirements-dev.in
 ipython==8.37.0
@@ -110,6 +112,7 @@ platformdirs==4.3.8
     #   virtualenv
 pluggy==1.6.0
     # via
+    #   -c requirements.txt
     #   pytest
     #   pytest-cov
 pre-commit==4.2.0
@@ -136,8 +139,9 @@ pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
-pytest==8.4.1
+pytest==8.4.2
     # via
+    #   -c requirements.txt
     #   -r requirements-dev.in
     #   pytest-cov
 pytest-cov==6.2.1
@@ -161,6 +165,7 @@ stevedore==5.4.1
     # via bandit
 tomli==2.2.1
     # via
+    #   -c requirements.txt
     #   black
     #   build
     #   coverage
